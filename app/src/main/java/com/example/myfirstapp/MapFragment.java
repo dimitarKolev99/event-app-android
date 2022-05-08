@@ -74,14 +74,14 @@ public class MapFragment extends Fragment {
                 ContextCompat.checkSelfPermission(getContext(),
                         Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
                 ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            String[] permissions = {Manifest.permission.INTERNET, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.ACCESS_FINE_LOCATION};
+            String[] permissions = {Manifest.permission.INTERNET,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.MANAGE_EXTERNAL_STORAGE,
+                    Manifest.permission.ACCESS_FINE_LOCATION};
             requestPermissions(permissions, REQUEST_PERMISSIONS_REQUEST_CODE);
         }
 
         Context ctx = getActivity().getApplicationContext();
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
-
-
 
 
         view = inflater.inflate(R.layout.fragment_map, container, false);
@@ -91,8 +91,6 @@ public class MapFragment extends Fragment {
         osm.setBuiltInZoomControls(true);
         osm.setMultiTouchControls(true);
 
-        mc = (MapController) osm.getController();
-        mc.setZoom(15);
         osm.setBuiltInZoomControls(true);
         osm.setMultiTouchControls(true);
         IMapController mapController = osm.getController();
@@ -106,16 +104,6 @@ public class MapFragment extends Fragment {
     }
 
 
-    public void addMarker (GeoPoint center){
-        Marker marker = new Marker(osm);
-        marker.setPosition(center);
-        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-//        marker.setIcon(getResources().getDrawable(R.drawable.fire));
-        osm.getOverlays().clear();
-        osm.getOverlays().add(marker);
-        osm.invalidate();
-        marker.setTitle("Sua Localização");
-    }
 
 
     @Override
@@ -146,28 +134,10 @@ public class MapFragment extends Fragment {
     }
 
 
-    public void onLocationChanged(Location location) {
-        GeoPoint center = new GeoPoint(location.getLatitude(), location.getLongitude());
-
-        mc.animateTo(center);
-        addMarker(center);
-
-    }
 
 
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-
-    }
 
 
-    public void onProviderEnabled(String provider) {
-
-    }
-
-
-    public void onProviderDisabled(String provider) {
-
-    }
     @Override
     public void onDestroy(){
         super.onDestroy();

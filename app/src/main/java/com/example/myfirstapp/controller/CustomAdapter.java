@@ -10,14 +10,19 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myfirstapp.R;
+import com.example.myfirstapp.model.Event;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHolder>{
     private static final String TAG = "CustomAdapter";
 
     private String[] mDataSet;
+    private List<Event> events = new ArrayList<>();
 
     public static class MyViewHolder extends RecyclerView.ViewHolder {
-        private final TextView textView;
+        private final TextView titleView;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -28,16 +33,16 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
                 }
             });
 
-            textView = itemView.findViewById(R.id.event_title);
+            titleView = itemView.findViewById(R.id.event_title);
         }
 
         public TextView getTextView() {
-            return textView;
+            return titleView;
         }
     }
 
-    public CustomAdapter(String[] dataSet) {
-        mDataSet = dataSet;
+    public CustomAdapter(List<Event> data) {
+        events = data;
     }
 
     @NonNull
@@ -50,16 +55,21 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
 
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
+        Event currentEvent = events.get(position);
         Log.d(TAG, "Element " + position + " set.");
-        holder.getTextView().setText(mDataSet[position]);
+        holder.getTextView().setText(currentEvent.getTitle());
     }
 
 
 
     @Override
     public int getItemCount() {
-        return mDataSet.length;
+        return events.size();
     }
 
+    public void setEvents(List<Event> events) {
+        this.events = events;
+        notifyDataSetChanged();
+    }
 
 }
