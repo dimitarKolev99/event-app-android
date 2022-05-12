@@ -1,7 +1,9 @@
 <resources>
-    <string name="app_name">My First App</string>
+    <string name="app_name">Event App</string>
     <string name="input_username">Username</string>
-    <string name="input_password">Password</string>
     <string name="button_send">Send</string>
-    <string name="button_register">Register</string>
+    <string name="button_cont">Continue</string>
+    <string name="button_cont_guest">Continue as guest</string>
+    <string name="register_text">You can enter a username here or continue as guest</string>
+    <string name="pref_previously_started">isFirstRun</string>
 </resources>

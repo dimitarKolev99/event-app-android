@@ -28,9 +28,16 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapController;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.ItemizedIconOverlay;
+import org.osmdroid.views.overlay.ItemizedOverlayWithFocus;
 import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.OverlayItem;
 import org.osmdroid.views.overlay.compass.CompassOverlay;
 import org.osmdroid.views.overlay.mylocation.DirectedLocationOverlay;
+import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
+import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
+
+import java.util.ArrayList;
 
 public class MapFragment extends Fragment {
     private static final String TAG = "MYTAG";
@@ -43,6 +50,8 @@ public class MapFragment extends Fragment {
     private LocationManager locationManager;
     private CompassOverlay compassOverlay;
     private DirectedLocationOverlay locationOverlay;
+
+    MyLocationNewOverlay mLocationOverlay;
 
     public MapFragment() {
 
@@ -98,7 +107,26 @@ public class MapFragment extends Fragment {
         GeoPoint startPoint = new GeoPoint(48.8583, 2.2944);
         mapController.setCenter(startPoint);
 
-        Log.d(TAG, "HERE");
+        ArrayList<OverlayItem> items = new ArrayList<OverlayItem>();
+        items.add(new OverlayItem("Title", "Description", new GeoPoint(48.8583,2.2944))); // Lat/Lon decimal degrees
+
+//the overlay
+        ItemizedOverlayWithFocus<OverlayItem> mOverlay = new ItemizedOverlayWithFocus<OverlayItem>(items,
+                new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>() {
+                    @Override
+                    public boolean onItemSingleTapUp(final int index, final OverlayItem item) {
+                        //do something
+                        return true;
+                    }
+                    @Override
+                    public boolean onItemLongPress(final int index, final OverlayItem item) {
+                        return false;
+                    }
+                }, getContext());
+        mOverlay.setFocusItemsOnTap(true);
+
+        osm.getOverlays().add(mOverlay);
+
 
         return view;
     }

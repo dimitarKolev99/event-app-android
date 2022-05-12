@@ -1,33 +1,20 @@
 package com.example.myfirstapp;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
+import androidx.navigation.ui.NavigationUI;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
-import android.view.MenuItem;
-import android.widget.Toast;
 
-import com.example.myfirstapp.controller.CustomAdapter;
-import com.example.myfirstapp.model.Event;
 import com.example.myfirstapp.model.EventViewModel;
-import com.example.myfirstapp.network.NetworkService;
+import com.example.myfirstapp.network.Controller;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.navigation.NavigationBarView;
-import com.google.android.material.navigation.NavigationBarView.OnItemSelectedListener;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity  {
 
@@ -40,14 +27,14 @@ public class MainActivity extends AppCompatActivity  {
          */
     Handler mHandler = new Handler();
     BottomNavigationView bottomNav;
-//    LocalBroadcastManager manager;
+
     HomeFragment homeFragment;
     MapFragment mapFragment;
     FavoritesFragment favoritesFragment;
     private SharedViewModel viewModel;
     private EventViewModel eventViewModel;
     FragmentManager fragmentManager;
-//    FragmentTransaction fragmentTransaction;
+
 
 
 
@@ -69,8 +56,9 @@ public class MainActivity extends AppCompatActivity  {
         });
 
          */
-        /*
-        viewModel = new ViewModelProvider(this).get(SharedViewModel.class);
+
+        //viewModel = new ViewModelProvider(this).get(SharedViewModel.class);
+
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -78,25 +66,35 @@ public class MainActivity extends AppCompatActivity  {
             }
         }).start();
 
-         */
+
 //        viewModel = new ViewModelProvider(this).get(SharedViewModel.class);
         Intent intent = getIntent();
         String[] data = intent.getStringArrayExtra("data");
 
         bottomNav = findViewById(R.id.bottom_navigation);
-        bottomNav.setOnNavigationItemSelectedListener(navListener);
+//        bottomNav.setOnNavigationItemSelectedListener(navListener);
+
+
+        final NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+        final NavController navController = navHostFragment.getNavController();
+
+        NavigationUI.setupWithNavController(bottomNav, navController);
 
         homeFragment = new HomeFragment();
         mapFragment = new MapFragment();
         favoritesFragment = new FavoritesFragment();
         fragmentManager = getSupportFragmentManager();
 
+        /*
         fragmentManager.beginTransaction().replace(R.id.fragment_container, homeFragment, "HOME_FRAGMENT")
                 .setReorderingAllowed(true)
                 .addToBackStack(homeFragment.getClass().getName())
                 .commit();
+
+         */
     }
 
+    /*
     private BottomNavigationView.OnNavigationItemSelectedListener navListener =
             new BottomNavigationView.OnNavigationItemSelectedListener() {
                 @Override
@@ -135,41 +133,24 @@ public class MainActivity extends AppCompatActivity  {
                     android.app.Fragment fragment = getFragmentManager().findFragmentByTag(tag);
 
 
-                     */
+
                     Log.d(TAG, String.valueOf(index));
-
-
-
 
 
                     return true;
                 }
             };
 
+        */
 
-    public Fragment getCurrentFragment() {
-        return fragmentManager.findFragmentById(R.id.fragment_container);
-    }
-
-    private void replaceFragment (Fragment fragment){
-        String backStateName = fragment.getClass().getName();
-
-        FragmentManager manager = fragmentManager;
-        boolean fragmentPopped = manager.popBackStackImmediate(backStateName, 0);
-
-        if (!fragmentPopped){ //fragment not in back stack, create it.
-            FragmentTransaction ft = manager.beginTransaction();
-            ft.replace(R.id.fragment_container, fragment);
-            ft.addToBackStack(backStateName);
-            ft.commit();
-        }
-    }
 
 
 
     private void doCall() {
 
-        final String data = NetworkService.INSTANCE.getUsers("https://fakestoreapi.com/products/");
+        //final String data = NetworkService.INSTANCE.getUsers("https://fakestoreapi.com/products/");
+        Controller controller = new Controller();
+        controller.start();
         mHandler.post(new Runnable() {
             @Override
             public void run() {

@@ -2,6 +2,8 @@ package com.example.myfirstapp.model;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.Insert;
 import androidx.room.PrimaryKey;
 
 import java.sql.Blob;
@@ -22,10 +24,18 @@ public class Event {
 
     private int interested_count;
 
+    @Ignore
     public Event(String title, String description, byte[] image, int interested_count) {
         this.title = title;
         this.description = description;
         this.image = image;
+        this.interested_count = interested_count;
+    }
+
+
+    public Event(String title, String description, int interested_count) {
+        this.title = title;
+        this.description = description;
         this.interested_count = interested_count;
     }
 
@@ -43,6 +53,10 @@ public class Event {
 
     public String getDescription() {
         return description;
+    }
+
+    public void setImage(byte[] image) {
+      this.image = image;
     }
 
     public byte[] getImage() {

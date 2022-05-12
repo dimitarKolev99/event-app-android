@@ -1,14 +1,12 @@
 package com.example.myfirstapp;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
+import android.preference.PreferenceManager;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.ViewModelProvider;
-
-import com.example.myfirstapp.network.NetworkService;
 
 public class SplashActivity extends AppCompatActivity {
 
@@ -18,36 +16,20 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                doCall();
-            }
-        }).start();
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        boolean previouslyStarted = prefs.getBoolean(getString(R.string.pref_previously_started), false);
+        if(!previouslyStarted) {
+            SharedPreferences.Editor edit = prefs.edit();
+            edit.putBoolean(getString(R.string.pref_previously_started), Boolean.TRUE);
+            edit.commit();
 
-        /*
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
-        finish();
-
-         */
-
-    }
-
-    private void doCall() {
-
-        final String data = NetworkService.INSTANCE.getUsers("https://fakestoreapi.com/products/");
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                String[] data = new String[] {"1", "2", "3", "4", "5", "6"};
-
-                Intent intent = new Intent(SplashActivity.this, MainActivity.class);
-                intent.putExtra("data", data);
-                startActivity(intent);
-                finish();
-            }
-        });
-
+            Intent intent = new Intent(this, RegisterActivity.class);
+            startActivity(intent);
+            finish();
+        } else {
+            Intent intent = new Intent(this, MainActivity.class);
+            startActivity(intent);
+            finish();
+        }
     }
 }
