@@ -1,69 +1,112 @@
 package com.example.myfirstapp.model;
 
-import androidx.room.ColumnInfo;
-import androidx.room.Entity;
-import androidx.room.Ignore;
-import androidx.room.Insert;
-import androidx.room.PrimaryKey;
+import android.graphics.Bitmap;
 
-import java.sql.Blob;
+import com.example.myfirstapp.utils.BitmapToByteArrayHelper;
 
-@Entity(tableName = "Event")
 public class Event {
+    int id;
+    int organizer_id;
+    String title;
+    String description;
+    Bitmap image;
+    int interested_count;
+    String location;
+    String time;
+    String created_at;
+    String updated_at;
+    BitmapToByteArrayHelper bitmapToByteArrayHelper = new BitmapToByteArrayHelper();
 
-    @PrimaryKey(autoGenerate = true)
-
-    private int id;
-
-    private String title;
-
-    private String description;
-
-    @ColumnInfo(typeAffinity = ColumnInfo.BLOB)
-    private byte[] image;
-
-    private int interested_count;
-
-    @Ignore
-    public Event(String title, String description, byte[] image, int interested_count) {
+    public Event(int id, int organizer_id, String title, String description,
+                 Bitmap image, int interested_count, String location, String time, String created_at,
+                 String updated_at)
+    {
+        this.id = id;
+        this.organizer_id = organizer_id;
         this.title = title;
         this.description = description;
         this.image = image;
         this.interested_count = interested_count;
-    }
+        this.location = location;
+        this.time = time;
+        this.created_at = created_at;
+        this.updated_at = updated_at;
 
-
-    public Event(String title, String description, int interested_count) {
-        this.title = title;
-        this.description = description;
-        this.interested_count = interested_count;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public int getId() {
         return id;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getOrganizer_id() {
+        return organizer_id;
+    }
+
+    public void setOrganizer_id(int organizer_id) {
+        this.organizer_id = organizer_id;
+    }
+
     public String getTitle() {
         return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public void setImage(byte[] image) {
-      this.image = image;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public byte[] getImage() {
-        return image;
+        return bitmapToByteArrayHelper.getByteArrayFromBitmap(image);
     }
 
-    public int getInterested_count() {
-        return interested_count;
+    public void setImage(Bitmap image) {
+        this.image = image;
+    }
+
+    public int getInterested_count() { return interested_count; }
+
+    public void setInterested_count(int interested_count) { this.interested_count = interested_count; }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
+
+    public String getCreated_at() {
+        return created_at;
+    }
+
+    public void setCreated_at(String created_at) {
+        this.created_at = created_at;
+    }
+
+    public String getUpdated_at() {
+        return updated_at;
+    }
+
+    public void setUpdated_at(String updated_at) {
+        this.updated_at = updated_at;
     }
 }

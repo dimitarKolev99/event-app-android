@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,22 +21,22 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myfirstapp.controller.EventAdapter;
-import com.example.myfirstapp.controller.OnItemClickListener;
-import com.example.myfirstapp.model.Event;
-import com.example.myfirstapp.model.EventViewModel;
+import com.example.myfirstapp.controller.EventController;
+import com.example.myfirstapp.model.EventModel;
+import com.example.myfirstapp.model.EventModelImpl;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.util.List;
-
 public class HomeFragment extends Fragment {
+
+    public static HomeFragment newInstance() {
+        return new HomeFragment();
+    }
 
 
     private static final String TAG = "FRAGMENT_TAG";
@@ -52,8 +53,9 @@ public class HomeFragment extends Fragment {
 
     FloatingActionButton addEventBtn;
 
-    private SharedViewModel viewModel;
-    private EventViewModel eventViewModel;
+    EventController eventController;
+
+    private EventModel eventModel;
 
     public static final int ADD_EVENT_REQUEST = 1;
     public static final int EDIT_EVENT_REQUEST = 2;
@@ -61,10 +63,13 @@ public class HomeFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        setHasOptionsMenu(true);
-
+//        setHasOptionsMenu(true);
         view = inflater.inflate(R.layout.fragment_home, container, false);
+        setViews();
+        eventModel = new EventModelImpl(MyApplication.getEventDBAdapter());
+        eventController = new EventController(eventModel, getContext());
 
+        Log.d(TAG, "HERE");
         // btn to add event activity
         addEventBtn = view.findViewById(R.id.add_event_btn);
         addEventBtn.setOnClickListener(new View.OnClickListener() {
@@ -76,32 +81,9 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        eventAdapter = new EventAdapter();
-
-        setViews();
-        eventViewModel = new ViewModelProvider(getActivity()).get(EventViewModel.class);
-        eventViewModel.getAllEvents().observe(getViewLifecycleOwner(), new Observer<List<Event>>() {
-            @Override
-            public void onChanged(List<Event> events) {
-                Toast.makeText(getActivity(), "Changed", Toast.LENGTH_SHORT).show();
-                eventAdapter.submitList(events);
-                recyclerView.smoothScrollToPosition(eventAdapter.getItemCount() - 1);
-            }
-        });
-
-        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,
-                ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
-            @Override
-            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-                return false;
-            }
-
-            @Override
-            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                eventViewModel.delete(eventAdapter.getEventAt(viewHolder.getAdapterPosition()));
-                Toast.makeText(getContext(), "Event deleted", Toast.LENGTH_SHORT).show();
-            }
-        }).attachToRecyclerView(recyclerView);
+// on update
+        eventAdapter.submitList(eventController.onViewLoaded());
+//        recyclerView.smoothScrollToPosition(eventAdapter.getItemCount() - 1);
 
         return view;
     }
@@ -123,8 +105,8 @@ public class HomeFragment extends Fragment {
                         String title = data.getStringExtra(AddEditEventActivity.EXTRA_TITLE);
                         String description = data.getStringExtra(AddEditEventActivity.EXTRA_DESCRIPTION);
 
-                        Event event = new Event(title, description, 0);
-                        eventViewModel.insert(event);
+//                        Event event = new Event(title, description, 0);
+//                        eventViewModel.insert(event);
 
                         Toast.makeText(getContext(), "Event saved", Toast.LENGTH_SHORT).show();
 
@@ -140,10 +122,10 @@ public class HomeFragment extends Fragment {
                         String title = result.getData().getStringExtra(AddEditEventActivity.EXTRA_TITLE);
                         String description = result.getData().getStringExtra(AddEditEventActivity.EXTRA_DESCRIPTION);
 
-                        Event event = new Event(title, description, 0);
-                        event.setId(id);
+//                        Event event = new Event(title, description, 0);
+//                        event.setId(id);
 
-                        eventViewModel.update(event);
+//                        eventViewModel.update(event);
 
                         Toast.makeText(getContext(), "Event updated!", Toast.LENGTH_SHORT).show();
                     } else {
@@ -158,13 +140,12 @@ public class HomeFragment extends Fragment {
 
 
     public void setViews() {
-        //eventAdapter = new EventAdapter();
+        eventAdapter = new EventAdapter();
         recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setAdapter(eventAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
-
         setItemTouchHelper();
-        setClickListener(eventAdapter);
+//        setClickListener(eventAdapter);
     }
 
     private void setItemTouchHelper() {
@@ -177,7 +158,7 @@ public class HomeFragment extends Fragment {
 
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                eventViewModel.delete(eventAdapter.getEventAt(viewHolder.getAdapterPosition()));
+//                eventViewModel.delete(eventAdapter.getEventAt(viewHolder.getAdapterPosition()));
                 Toast.makeText(getContext(), "Event deleted", Toast.LENGTH_SHORT).show();
             }
         }).attachToRecyclerView(recyclerView);
@@ -193,7 +174,7 @@ public class HomeFragment extends Fragment {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.delete_all_events:
-                eventViewModel.deleteAllEvents();
+//                eventViewModel.deleteAllEvents();
                 Toast.makeText(getContext(), "All notes deleted", Toast.LENGTH_SHORT).show();
             default:
                 super.onOptionsItemSelected(item);
@@ -239,8 +220,10 @@ public class HomeFragment extends Fragment {
 
     }
 
+    /*
     private void setClickListener(EventAdapter eventAdapter) {
         eventAdapter.setOnItemClickListener(new OnItemClickListener() {
+
             @Override
             public void onEventClick(Event event) {
                 Intent intent = new Intent(getActivity(), AddEditEventActivity.class);
@@ -251,7 +234,11 @@ public class HomeFragment extends Fragment {
                 openActivityForResult(intent);
             }
         });
+
+
     }
+
+     */
 
 
 

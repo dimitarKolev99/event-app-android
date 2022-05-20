@@ -40,6 +40,11 @@ import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 import java.util.ArrayList;
 
 public class MapFragment extends Fragment {
+
+    public static MapFragment newInstance() {
+        return new MapFragment();
+    }
+
     private static final String TAG = "MYTAG";
     private static MapFragment INSTANCE = null;
     private final int REQUEST_PERMISSIONS_REQUEST_CODE = 1;
@@ -77,7 +82,7 @@ public class MapFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
-
+        Log.d(TAG, "HERE");
         if (ContextCompat.checkSelfPermission(getContext(),
                 Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED ||
                 ContextCompat.checkSelfPermission(getContext(),

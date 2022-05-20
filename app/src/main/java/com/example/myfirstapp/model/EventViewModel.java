@@ -12,6 +12,8 @@ public class EventViewModel extends AndroidViewModel {
     private EventRepository eventRepository;
     private LiveData<List<Event>> allEvents;
 
+
+    //https://github.com/android/architecture-samples/pull/631/files/d736a0bd0f11b9a73a803c4abca7a3c895e4f8f0
     public EventViewModel(@NonNull Application application) {
         super(application);
         eventRepository = new EventRepository(application);

@@ -32,7 +32,7 @@ public class Controller implements Callback<List<Event>> {
 
         NetworkService networkService = retrofit.create(NetworkService.class);
 
-        Call<List<Event>> call = networkService.loadEvents();
+        Call<List<Event>> call = networkService.getAllEvents();
         call.enqueue(this);
     }
 

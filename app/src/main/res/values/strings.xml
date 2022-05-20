@@ -6,4 +6,7 @@
     <string name="button_cont_guest">Continue as guest</string>
     <string name="register_text">You can enter a username here or continue as guest</string>
     <string name="pref_previously_started">isFirstRun</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
 </resources>

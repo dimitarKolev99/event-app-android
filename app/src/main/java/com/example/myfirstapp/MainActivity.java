@@ -1,63 +1,64 @@
 package com.example.myfirstapp;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.navigation.NavController;
-import androidx.navigation.fragment.NavHostFragment;
-import androidx.navigation.ui.NavigationUI;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.MenuItem;
 
-import com.example.myfirstapp.model.EventViewModel;
+import com.example.myfirstapp.controller.EventController;
+import com.example.myfirstapp.model.EventModel;
+import com.example.myfirstapp.model.EventModelImpl;
 import com.example.myfirstapp.network.Controller;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationView;
 
-public class MainActivity extends AppCompatActivity  {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG = "MYTAG";
-    /*
-        RecyclerView recyclerView;
-        Handler mHandler = new Handler();
-        CustomAdapter customAdapter;
 
-         */
     Handler mHandler = new Handler();
     BottomNavigationView bottomNav;
 
-    HomeFragment homeFragment;
-    MapFragment mapFragment;
-    FavoritesFragment favoritesFragment;
-    private SharedViewModel viewModel;
-    private EventViewModel eventViewModel;
-    FragmentManager fragmentManager;
+    EventController eventController;
 
+    private EventModel eventModel;
 
-
+    private DrawerLayout drawer;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        /*
-        eventViewModel = new ViewModelProvider(this).get(EventViewModel.class);
-        viewModel = new ViewModelProvider(this).get(SharedViewModel.class);
-        eventViewModel.getAllEvents().observe(this, new Observer<List<Event>>() {
-            @Override
-            public void onChanged(List<Event> events) {
 
-                //update RecyclerView
-//                viewModel.setEvents(events);
-            }
-        });
+        eventModel = new EventModelImpl(MyApplication.getEventDBAdapter());
+        eventController = new EventController(eventModel, this);
 
-         */
 
-        //viewModel = new ViewModelProvider(this).get(SharedViewModel.class);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+
+        drawer = findViewById(R.id.drawer_layout);
+
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar,
+                R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
 
         new Thread(new Runnable() {
             @Override
@@ -66,85 +67,67 @@ public class MainActivity extends AppCompatActivity  {
             }
         }).start();
 
-
-//        viewModel = new ViewModelProvider(this).get(SharedViewModel.class);
         Intent intent = getIntent();
         String[] data = intent.getStringArrayExtra("data");
 
         bottomNav = findViewById(R.id.bottom_navigation);
-//        bottomNav.setOnNavigationItemSelectedListener(navListener);
 
+        bottomNav.setOnNavigationItemSelectedListener(navListener);
 
-        final NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
-        final NavController navController = navHostFragment.getNavController();
+        goToFragment(HomeFragment.newInstance());
 
-        NavigationUI.setupWithNavController(bottomNav, navController);
-
-        homeFragment = new HomeFragment();
-        mapFragment = new MapFragment();
-        favoritesFragment = new FavoritesFragment();
-        fragmentManager = getSupportFragmentManager();
-
-        /*
-        fragmentManager.beginTransaction().replace(R.id.fragment_container, homeFragment, "HOME_FRAGMENT")
-                .setReorderingAllowed(true)
-                .addToBackStack(homeFragment.getClass().getName())
-                .commit();
-
-         */
     }
 
-    /*
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.drawer_my_events:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new MyEventsFragment()).commit();
+                break;
+        }
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
+
+
+
     private BottomNavigationView.OnNavigationItemSelectedListener navListener =
-            new BottomNavigationView.OnNavigationItemSelectedListener() {
-                @Override
-                public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                    Fragment selectedFragment = null;
+            item -> {
 
-
-
-
-
-                    switch (item.getItemId()) {
-                        case R.id.nav_home:
-                            selectedFragment = homeFragment;
-                            fragmentManager.popBackStack(getCurrentFragment().getClass().getName(),
-                                    FragmentManager.POP_BACK_STACK_INCLUSIVE);
-
-                        case R.id.nav_map:
-                            selectedFragment = mapFragment;
-                            break;
-                        case R.id.nav_favorites:
-                            selectedFragment = favoritesFragment;
-                            break;
-                    }
-
-
-
-                    fragmentManager.beginTransaction().replace(R.id.fragment_container, selectedFragment)
-//                                        .setReorderingAllowed(true)
-                                        .addToBackStack(selectedFragment.getClass().getName())
-                                        .commit();
-
-                    int index = fragmentManager.getBackStackEntryCount() - 1;
-                    /*
-                    FragmentManager.BackStackEntry backEntry = (FragmentManager.BackStackEntry) getFragmentManager().getBackStackEntryAt(index);
-                    String tag = backEntry.getName();
-                    android.app.Fragment fragment = getFragmentManager().findFragmentByTag(tag);
-
-
-
-                    Log.d(TAG, String.valueOf(index));
-
-
-                    return true;
+                switch (item.getItemId()) {
+                    case R.id.nav_home:
+                        HomeFragment instance = HomeFragment.newInstance();
+                        pop();
+                        goToFragment(instance);
+                        break;
+                    case R.id.nav_map:
+                        MapFragment mapFragmentInstance = MapFragment.newInstance();
+                        pop();
+                        goToFragment(mapFragmentInstance);
+                        break;
+                    case R.id.nav_favorites:
+                        FavoritesFragment favoritesFragment = FavoritesFragment.newInstance();
+                        pop();
+                        goToFragment(favoritesFragment);
+                        break;
                 }
+
+                return true;
             };
 
-        */
+    public void goToFragment(Fragment fragment) {
 
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction ft = fragmentManager.beginTransaction();
+        ft.replace(R.id.fragment_container, fragment).addToBackStack("").commit();
+        //ft.add(R.id.fragment_container, fragment).addToBackStack("").commit();
+    }
 
-
+    public void pop() {
+        getFragmentManager().popBackStack();
+    }
 
     private void doCall() {
 
@@ -154,7 +137,7 @@ public class MainActivity extends AppCompatActivity  {
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                String[] data = new String[] {"1", "2", "3", "4", "5", "6"};
+                String[] data = new String[]{"1", "2", "3", "4", "5", "6"};
 //                viewModel.setText(data);
             }
         });

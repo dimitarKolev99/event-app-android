@@ -14,9 +14,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.myfirstapp.R;
 import com.example.myfirstapp.model.Event;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class EventAdapter extends ListAdapter<Event, EventAdapter.EventViewHolder> {
     private static final String TAG = "CustomAdapter";
 
@@ -62,8 +59,6 @@ public class EventAdapter extends ListAdapter<Event, EventAdapter.EventViewHolde
             return titleView;
         }
     }
-
-
 
     @NonNull
     @Override
