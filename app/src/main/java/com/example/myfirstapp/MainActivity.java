@@ -44,11 +44,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         eventModel = new EventModelImpl(MyApplication.getEventDBAdapter());
         eventController = new EventController(eventModel, this);
 
-
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
 
         drawer = findViewById(R.id.drawer_layout);
 

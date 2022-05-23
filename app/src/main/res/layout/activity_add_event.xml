@@ -6,34 +6,91 @@
     android:layout_height="match_parent"
     tools:context=".AddEditEventActivity"
     android:padding="16dp"
+    android:background="@color/white"
     android:orientation="vertical">
 
     <EditText
         android:id="@+id/edit_text_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Title"
+        android:hint="@string/title"
+        android:layout_gravity="center"
         android:inputType="text"/>
 
     <EditText
         android:id="@+id/edit_text_description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Description"
+        android:hint="@string/description"
+        android:layout_gravity="center"
         android:inputType="textMultiLine"/>
 
     <TextView
+        android:layout_gravity="center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Pick an image for your event :)"
+        android:text="@string/pick_an_image_for_your_event"
         android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"/>
 
     <ImageView
         android:id="@+id/pick_img_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:padding="12dp"
         android:src="@drawable/ic_baseline_image_24" />
 
+    <ImageView
+        android:id="@+id/previewImg"
+        android:layout_gravity="center"
+        android:layout_width="1000px"
+        android:layout_height="500px"
+        android:padding="12dp"/>
+
+    <EditText
+        android:id="@+id/event_date_picker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_gravity="center"
+        android:hint="@string/pick_the_event_date"
+        android:textSize="14sp"
+        android:clickable="false"
+        android:cursorVisible="false"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        />
+
+    <EditText
+        android:id="@+id/event_time_picker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_gravity="center"
+        android:hint="@string/pick_the_event_time"
+        android:textSize="14sp"
+        android:clickable="false"
+        android:cursorVisible="false"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        />
+
+    <EditText
+        android:id="@+id/edit_event_location"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/location"
+        android:layout_gravity="center"
+        android:inputType="textMultiLine"/>
+
+    <Button
+        android:id="@+id/btn_save_event"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:text="@string/button_cont"
+        />
 
 </LinearLayout>

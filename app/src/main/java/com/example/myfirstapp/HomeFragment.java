@@ -3,8 +3,10 @@ package com.example.myfirstapp;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -28,9 +30,15 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myfirstapp.controller.EventAdapter;
 import com.example.myfirstapp.controller.EventController;
+import com.example.myfirstapp.model.Event;
 import com.example.myfirstapp.model.EventModel;
 import com.example.myfirstapp.model.EventModelImpl;
+import com.example.myfirstapp.utils.BitmapToByteArrayHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Random;
 
 public class HomeFragment extends Fragment {
 
@@ -59,6 +67,8 @@ public class HomeFragment extends Fragment {
 
     public static final int ADD_EVENT_REQUEST = 1;
     public static final int EDIT_EVENT_REQUEST = 2;
+
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 
     @Nullable
     @Override
@@ -104,8 +114,22 @@ public class HomeFragment extends Fragment {
                         Intent data = result.getData();
                         String title = data.getStringExtra(AddEditEventActivity.EXTRA_TITLE);
                         String description = data.getStringExtra(AddEditEventActivity.EXTRA_DESCRIPTION);
+                        String date = data.getStringExtra(AddEditEventActivity.EXTRA_DATE);
+                        byte[] image = data.getByteArrayExtra(AddEditEventActivity.EXTRA_IMAGE);
+                        String time = data.getStringExtra(AddEditEventActivity.EXTRA_TIME);
+                        String location = data.getStringExtra(AddEditEventActivity.EXTRA_LOCATION);
 
-//                        Event event = new Event(title, description, 0);
+                        Random random = new Random();
+
+                        BitmapToByteArrayHelper bitmapToByteArrayHelper = new BitmapToByteArrayHelper();
+
+                        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
+                        Date datee = new Date(System.currentTimeMillis());
+
+                        Event event = new Event(random.nextInt(),  prefs.getInt("UserID", 0),
+                                title, description, bitmapToByteArrayHelper.getBitmapFromByteArray(image),
+                                0, location, time, formatter.format(datee),
+                                formatter.format(datee));
 //                        eventViewModel.insert(event);
 
                         Toast.makeText(getContext(), "Event saved", Toast.LENGTH_SHORT).show();
@@ -126,6 +150,8 @@ public class HomeFragment extends Fragment {
 //                        event.setId(id);
 
 //                        eventViewModel.update(event);
+//                        eventController.onAddButtonClicked(event);
+
 
                         Toast.makeText(getContext(), "Event updated!", Toast.LENGTH_SHORT).show();
                     } else {

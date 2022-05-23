@@ -6,7 +6,31 @@
     <string name="button_cont_guest">Continue as guest</string>
     <string name="register_text">You can enter a username here or continue as guest</string>
     <string name="pref_previously_started">isFirstRun</string>
+    <string name="pref_user_id">UserID</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="location">Location</string>
+    <string name="pick_the_event_time">Pick the event time</string>
+    <string name="pick_the_event_date">Pick the event date</string>
+    <string name="pick_an_image_for_your_event">Pick an image for your event :)</string>
+    <string name="description">Description</string>
+    <string name="title">Title</string>
+
+    <string-array name="planets_array">
+        <item>00</item>
+        <item>01</item>
+        <item>02</item>
+        <item>03</item>
+        <item>04</item>
+        <item>05</item>
+        <item>06</item>
+        <item>07</item>
+        <item>08</item>
+        <item>09</item>
+        <item>10</item>
+        <item>11</item>
+        <item>12</item>
+        <item>07</item>
+    </string-array>
 </resources>
