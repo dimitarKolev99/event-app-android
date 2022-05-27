@@ -52,6 +52,7 @@ public class AddEditEventActivity extends AppCompatActivity {
     public static final String EXTRA_TIME = "com.example.myfirstapp.EXTRA_TIME";
     public static final String EXTRA_LOCATION = "com.example.myfirstapp.EXTRA_LOCATION";
     public static final String EXTRA_IMAGE = "com.example.myfirstapp.EXTRA_IMAGE";
+    public static final String EXTRA_URI = "com.example.myfirstapp.EXTRA_URI";
 
     public static int REQUEST_CODE = 0;
 
@@ -67,6 +68,7 @@ public class AddEditEventActivity extends AppCompatActivity {
     private EditText event_location;
     private Bitmap bitmap;
     private BitmapToByteArrayHelper bitmapToByteArrayHelper;
+    private Uri urii;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -144,9 +146,7 @@ public class AddEditEventActivity extends AppCompatActivity {
 //            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
 //            intent.setType("image/*");
             mGetContent.launch("image/*");
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-            String username = prefs.getString(getString(R.string.pref_user_id), "default");
-            Log.d("HERE", username);
+
 //            startActivityForResult(Intent.createChooser(intent, "Pick image"), IMAGE_REQUEST_ID);
 
 
@@ -175,6 +175,7 @@ public class AddEditEventActivity extends AppCompatActivity {
 
                         Bitmap image = BitmapFactory.decodeStream(inputStream);
                         bitmap = image;
+                        urii = uri;
                         previewImg.setImageBitmap(image);
 
                         Log.d("ADD_EDIT_EVENT_ACT", "PICKED IMAGE");
@@ -201,11 +202,14 @@ public class AddEditEventActivity extends AppCompatActivity {
         Intent data = new Intent();
         data.putExtra(EXTRA_TITLE, title);
         data.putExtra(EXTRA_DESCRIPTION, description);
-        data.putExtra(EXTRA_IMAGE, bitmapToByteArrayHelper.getByteArrayFromBitmap(bitmap));
+//        data.putExtra(EXTRA_IMAGE, bitmap);
         data.putExtra(EXTRA_DATE, date);
+        data.putExtra(EXTRA_URI, urii);
         data.putExtra(EXTRA_TIME, time);
         data.putExtra(EXTRA_LOCATION, location);
         data.putExtra(HomeFragment.REQUEST_CODE, REQUEST_CODE);
+
+        Log.d("HERE", title);
 
         int id = getIntent().getIntExtra(EXTRA_ID, -1);
         if (id != -1) {
@@ -214,8 +218,6 @@ public class AddEditEventActivity extends AppCompatActivity {
 
         setResult(RESULT_OK, data);
         finish();
-
-
     }
 
     @Override

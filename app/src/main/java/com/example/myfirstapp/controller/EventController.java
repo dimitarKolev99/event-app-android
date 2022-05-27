@@ -1,6 +1,7 @@
 package com.example.myfirstapp.controller;
 
 import android.content.Context;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.example.myfirstapp.model.Event;
@@ -21,6 +22,9 @@ public class EventController {
     public List<Event> onViewLoaded() {
         try {
             list = eventModel.getAllEvents();
+            if (list == null) {
+                Toast.makeText(context, "NULL", Toast.LENGTH_SHORT).show();
+            }
         } catch (Exception e) {
             showErrorToast(e.getMessage());
         }
@@ -28,14 +32,20 @@ public class EventController {
     }
 
     public void onAddButtonClicked(Event event) {
-        try {
+
             boolean success = eventModel.addEvent(event);
             if (success) {
                 list = eventModel.getAllEvents();
+
             }
-        } catch (Exception e) {
+
+        /*
+        catch (Exception e) {
+//            Log.d("EVENT_CONTROLLER", "fail");
             showErrorToast(e.getMessage());
         }
+
+         */
     }
 
     public void onRemoveButtonClicked(Event event) {

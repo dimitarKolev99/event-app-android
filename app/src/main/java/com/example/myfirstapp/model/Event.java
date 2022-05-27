@@ -9,7 +9,7 @@ public class Event {
     int organizer_id;
     String title;
     String description;
-    Bitmap image;
+    String image;
     int interested_count;
     String location;
     String time;
@@ -18,7 +18,7 @@ public class Event {
     BitmapToByteArrayHelper bitmapToByteArrayHelper = new BitmapToByteArrayHelper();
 
     public Event(int id, int organizer_id, String title, String description,
-                 Bitmap image, int interested_count, String location, String time, String created_at,
+                 String image, int interested_count, String location, String time, String created_at,
                  String updated_at)
     {
         this.id = id;
@@ -66,13 +66,21 @@ public class Event {
         this.description = description;
     }
 
-    public byte[] getImage() {
-        return bitmapToByteArrayHelper.getByteArrayFromBitmap(image);
+//    public byte[] getImage() {
+//        return bitmapToByteArrayHelper.getByteArrayFromBitmap(image);
+//    }
+
+    public String getImage() {
+        return image;
     }
 
-    public void setImage(Bitmap image) {
+    public void setImage(String image) {
         this.image = image;
     }
+
+//    public void setImage(Bitmap image) {
+//        this.image = image;
+//    }
 
     public int getInterested_count() { return interested_count; }
 

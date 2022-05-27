@@ -4,6 +4,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -36,6 +39,8 @@ import com.example.myfirstapp.model.EventModelImpl;
 import com.example.myfirstapp.utils.BitmapToByteArrayHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
@@ -68,12 +73,14 @@ public class HomeFragment extends Fragment {
     public static final int ADD_EVENT_REQUEST = 1;
     public static final int EDIT_EVENT_REQUEST = 2;
 
-    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+
+    SharedPreferences prefs;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 //        setHasOptionsMenu(true);
+        prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         view = inflater.inflate(R.layout.fragment_home, container, false);
         setViews();
         eventModel = new EventModelImpl(MyApplication.getEventDBAdapter());
@@ -93,7 +100,10 @@ public class HomeFragment extends Fragment {
 
 // on update
         eventAdapter.submitList(eventController.onViewLoaded());
-//        recyclerView.smoothScrollToPosition(eventAdapter.getItemCount() - 1);
+
+        if (eventAdapter.getItemCount() != 0) {
+            recyclerView.smoothScrollToPosition(eventAdapter.getItemCount() - 1);
+        }
 
         return view;
     }
@@ -115,7 +125,7 @@ public class HomeFragment extends Fragment {
                         String title = data.getStringExtra(AddEditEventActivity.EXTRA_TITLE);
                         String description = data.getStringExtra(AddEditEventActivity.EXTRA_DESCRIPTION);
                         String date = data.getStringExtra(AddEditEventActivity.EXTRA_DATE);
-                        byte[] image = data.getByteArrayExtra(AddEditEventActivity.EXTRA_IMAGE);
+                        Uri uri = data.getParcelableExtra(AddEditEventActivity.EXTRA_URI);
                         String time = data.getStringExtra(AddEditEventActivity.EXTRA_TIME);
                         String location = data.getStringExtra(AddEditEventActivity.EXTRA_LOCATION);
 
@@ -126,11 +136,32 @@ public class HomeFragment extends Fragment {
                         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
                         Date datee = new Date(System.currentTimeMillis());
 
-                        Event event = new Event(random.nextInt(),  prefs.getInt("UserID", 0),
-                                title, description, bitmapToByteArrayHelper.getBitmapFromByteArray(image),
-                                0, location, time, formatter.format(datee),
-                                formatter.format(datee));
-//                        eventViewModel.insert(event);
+                        if (uri != null) {
+                            InputStream inputStream = null;
+                            try {
+                                if (getContext().getContentResolver() != null) {
+                                    inputStream = getContext().getContentResolver().openInputStream(uri);
+                                    Log.d(TAG, "FALSe");
+                                } else {
+                                    Log.d(TAG, "TRUE");
+                                }
+                            } catch (FileNotFoundException e) {
+                                e.printStackTrace();
+                            }
+
+                            Bitmap image = BitmapFactory.decodeStream(inputStream);
+
+                            Event event = new Event(random.nextInt(),  prefs.getInt(String.valueOf(R.string.pref_user_id), 0),
+                                    title, description, uri.toString(),
+                                    0, location, time, formatter.format(datee),
+                                    formatter.format(datee));
+
+                            eventController.onAddButtonClicked(event);
+
+                            getActivity().finish();
+                            getActivity().startActivity(new Intent(getActivity(), MainActivity.class));
+//                            eventAdapter.submitList(eventController.onViewLoaded());
+                        }
 
                         Toast.makeText(getContext(), "Event saved", Toast.LENGTH_SHORT).show();
 

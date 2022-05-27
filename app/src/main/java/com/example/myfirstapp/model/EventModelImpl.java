@@ -1,5 +1,7 @@
 package com.example.myfirstapp.model;
 
+import android.util.Log;
+
 import java.util.List;
 
 public class EventModelImpl implements EventModel{

@@ -14,9 +14,9 @@ public class BitmapToByteArrayHelper {
 
     public byte[] getByteArrayFromBitmap(Bitmap bitmap) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        bitmap.compress(Bitmap.CompressFormat.PNG, 10, stream);
         byte[] byteArray = stream.toByteArray();
-        bitmap.recycle();
+//        bitmap.recycle();
         try {
             stream.close();
         } catch (IOException e) {

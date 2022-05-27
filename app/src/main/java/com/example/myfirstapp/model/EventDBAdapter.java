@@ -2,10 +2,15 @@ package com.example.myfirstapp.model;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.preference.PreferenceManager;
+import android.util.Log;
 
+import com.example.myfirstapp.MainActivity;
+import com.example.myfirstapp.R;
 import com.example.myfirstapp.utils.BitmapToByteArrayHelper;
 
 import java.util.ArrayList;
@@ -18,6 +23,9 @@ public class EventDBAdapter {
     private static final int DB_VERSION = 1;
 
     private static final String EVENT_TABLE = "event_table";
+
+    private Context context;
+    SharedPreferences prefs;
 
     private static final String COLUMN_EVENT_ID = "event_id";
     private static final String COLUMN_ORGANIZER_ID = "event_organizer_id";
@@ -71,17 +79,53 @@ public class EventDBAdapter {
 
     private static final BitmapToByteArrayHelper bitmapToByteArrayHelper = new BitmapToByteArrayHelper();
 
+    /*
     private static final String CREATE_EVENT_TABLE = "CREATE TABLE " + EVENT_TABLE +
             "(" +
             COLUMN_EVENT_ID + " INTEGER PRIMARY KEY, " +
             COLUMN_TITLE + " TEXT NOT NULL, " +
             COLUMN_ORGANIZER_ID + " INTEGER NOT NULL, " +
             COLUMN_DESCRIPTION + " TEXT NOT NULL, " +
-            COLUMN_IMAGE + " BLOB, " + COLUMN_INTERESTED_COUNT + " INTEGER DEFAULT 0, " +
-            COLUMN_LOCATION + " TEXT NOT NULL, " + COLUMN_TIME + " TEXT, " +
+            COLUMN_IMAGE + " BLOB, " +
+            COLUMN_INTERESTED_COUNT + " INTEGER DEFAULT 0, " +
+            COLUMN_LOCATION + " TEXT NOT NULL, " +
+            COLUMN_TIME + " TEXT, " +
             COLUMN_CREATED_AT + " TEXT DEFAULT CURRENT_TIMESTAMP, " +
             COLUMN_UPDATED_AT + " TEXT DEFAULT CURRENT_TIMESTAMP, " +
-            " FOREIGN KEY (" + COLUMN_ORGANIZER_ID + ") REFERENCES users_table (user_id) " +
+            " FOREIGN KEY (" + COLUMN_ORGANIZER_ID + ") REFERENCES " + USER_TABLE + "(user_id)" +
+            ");";
+
+     */
+
+    /*
+    private static final String CREATE_EVENT_TABLE = "CREATE TABLE " + EVENT_TABLE +
+            "(" +
+            COLUMN_EVENT_ID + " INTEGER PRIMARY KEY, " +
+            COLUMN_TITLE + " TEXT NOT NULL, " +
+            COLUMN_ORGANIZER_ID + " INTEGER NOT NULL, " +
+            COLUMN_DESCRIPTION + " TEXT NOT NULL, " +
+            COLUMN_IMAGE + " BLOB, " +
+            COLUMN_INTERESTED_COUNT + " INTEGER DEFAULT 0, " +
+            COLUMN_LOCATION + " TEXT NOT NULL, " +
+            COLUMN_TIME + " TEXT, " +
+            COLUMN_CREATED_AT + " TEXT DEFAULT CURRENT_TIMESTAMP, " +
+            COLUMN_UPDATED_AT + " TEXT DEFAULT CURRENT_TIMESTAMP" +
+            ");";
+
+     */
+
+    private static final String CREATE_EVENT_TABLE = "CREATE TABLE " + EVENT_TABLE +
+            "(" +
+            COLUMN_EVENT_ID + " INTEGER PRIMARY KEY, " +
+            COLUMN_TITLE + " TEXT NOT NULL, " +
+            COLUMN_ORGANIZER_ID + " INTEGER NOT NULL, " +
+            COLUMN_DESCRIPTION + " TEXT NOT NULL, " +
+            COLUMN_IMAGE + " TEXT, " +
+            COLUMN_INTERESTED_COUNT + " INTEGER DEFAULT 0, " +
+            COLUMN_LOCATION + " TEXT NOT NULL, " +
+            COLUMN_TIME + " TEXT, " +
+            COLUMN_CREATED_AT + " TEXT DEFAULT CURRENT_TIMESTAMP, " +
+            COLUMN_UPDATED_AT + " TEXT DEFAULT CURRENT_TIMESTAMP" +
             ");";
 
     private static final String CREATE_USER_TABLE = "CREATE TABLE " + USER_TABLE +
@@ -95,20 +139,20 @@ public class EventDBAdapter {
 
     private static final String CREATE_EVENT_USERS_TABLE = "CREATE TABLE " + EVENT_USERS_TABLE +
             "(" +
-            COLUMN_EVENT_USERS_EVENT_ID + " INTEGER REFERENCES event_table(event_id) " +
+            COLUMN_EVENT_USERS_EVENT_ID + " INTEGER REFERENCES " + EVENT_TABLE + "(event_id) " +
             "ON UPDATE CASCADE ON DELETE CASCADE, " +
-            COLUMN_EVENT_USERS_USER_ID + " INTEGER REFERENCES user_table(user_id) " +
+            COLUMN_EVENT_USERS_USER_ID + " INTEGER REFERENCES " + USER_TABLE + "(user_id) " +
             "ON UPDATE CASCADE, " +
             " PRIMARY KEY (" + COLUMN_EVENT_USERS_EVENT_ID + ", " + COLUMN_EVENT_USERS_USER_ID + ")" +
             ");";
 
-    private Context context;
     private SQLiteDatabase sqLiteDatabase;
     private static EventDBAdapter instance;
 
     private EventDBAdapter(Context context) {
         this.context = context;
         sqLiteDatabase = new EventDBHelper(this.context, DB_NAME, null, DB_VERSION).getWritableDatabase();
+        prefs = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
     }
 
     public static EventDBAdapter getInstance(Context context) {
@@ -134,6 +178,7 @@ public class EventDBAdapter {
         }
 
         if (event.getDescription() != null) {
+            Log.d("DB", "NOT NULL");
             contentValues.put(COLUMN_DESCRIPTION, event.getDescription());
         }
 
@@ -159,11 +204,13 @@ public class EventDBAdapter {
             contentValues.put(COLUMN_UPDATED_AT, event.getUpdated_at());
         }
 
+        contentValues.put(COLUMN_EVENT_ID, event.getId());
+        contentValues.put(COLUMN_ORGANIZER_ID, prefs.getInt(String.valueOf(R.string.pref_user_id), 0));
+
         return contentValues;
     }
 
     public boolean update(Event event) {
-
         return sqLiteDatabase.update(EVENT_TABLE, loadContentValues(event), COLUMN_EVENT_ID+ " = " + event.getId()
         , null) > 0;
     }
@@ -181,7 +228,7 @@ public class EventDBAdapter {
                         cursor.getInt(1),
                         cursor.getString(2),
                         cursor.getString(3),
-                        bitmapToByteArrayHelper.getBitmapFromByteArray(cursor.getBlob(4)),
+                        cursor.getString(4),
                         cursor.getInt(5),
                         cursor.getString(6),
                         cursor.getString(7),
@@ -218,16 +265,16 @@ public class EventDBAdapter {
 
         @Override
         public void onCreate(SQLiteDatabase sqLiteDatabase) {
+//            sqLiteDatabase.execSQL(CREATE_USER_TABLE);
             sqLiteDatabase.execSQL(CREATE_EVENT_TABLE);
-            sqLiteDatabase.execSQL(CREATE_USER_TABLE);
-            sqLiteDatabase.execSQL(CREATE_EVENT_USERS_TABLE);
+//            sqLiteDatabase.execSQL(CREATE_EVENT_USERS_TABLE);
         }
 
         @Override
         public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
             sqLiteDatabase.execSQL("DROP TABLE IF EXISTS "+ EVENT_TABLE);
-            sqLiteDatabase.execSQL("DROP TABLE IF EXISTS "+ USER_TABLE);
-            sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + EVENT_USERS_TABLE);
+//            sqLiteDatabase.execSQL("DROP TABLE IF EXISTS "+ USER_TABLE);
+//            sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + EVENT_USERS_TABLE);
             onCreate(sqLiteDatabase);
 
         }
