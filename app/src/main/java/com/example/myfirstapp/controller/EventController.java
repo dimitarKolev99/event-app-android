@@ -36,7 +36,6 @@ public class EventController {
             boolean success = eventModel.addEvent(event);
             if (success) {
                 list = eventModel.getAllEvents();
-
             }
 
         /*

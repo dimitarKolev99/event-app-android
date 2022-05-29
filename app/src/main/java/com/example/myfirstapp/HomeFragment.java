@@ -2,6 +2,7 @@ package com.example.myfirstapp;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -39,7 +40,10 @@ import com.example.myfirstapp.model.EventModelImpl;
 import com.example.myfirstapp.utils.BitmapToByteArrayHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -101,9 +105,12 @@ public class HomeFragment extends Fragment {
 // on update
         eventAdapter.submitList(eventController.onViewLoaded());
 
+        /*
         if (eventAdapter.getItemCount() != 0) {
             recyclerView.smoothScrollToPosition(eventAdapter.getItemCount() - 1);
         }
+
+         */
 
         return view;
     }
@@ -151,16 +158,23 @@ public class HomeFragment extends Fragment {
 
                             Bitmap image = BitmapFactory.decodeStream(inputStream);
 
+                            int id = random.nextInt();
+                            String imgName =  "img" + String.valueOf(id) + ".jpg";
+                            String path = saveToInternalStorage(image, id);
+
                             Event event = new Event(random.nextInt(),  prefs.getInt(String.valueOf(R.string.pref_user_id), 0),
-                                    title, description, uri.toString(),
-                                    0, location, time, formatter.format(datee),
+                                    title, description, path, imgName,
+                                    0, location, date, time, formatter.format(datee),
                                     formatter.format(datee));
 
                             eventController.onAddButtonClicked(event);
 
-                            getActivity().finish();
-                            getActivity().startActivity(new Intent(getActivity(), MainActivity.class));
 //                            eventAdapter.submitList(eventController.onViewLoaded());
+//
+//                              eventAdapter.notifyItemInserted(eventAdapter.getItemCount());
+//                            getActivity().finish();                             //FAIL
+//                            getActivity().startActivity(new Intent(getActivity(), MainActivity.class));
+                            eventAdapter.submitList(eventController.onViewLoaded());
                         }
 
                         Toast.makeText(getContext(), "Event saved", Toast.LENGTH_SHORT).show();
@@ -194,10 +208,36 @@ public class HomeFragment extends Fragment {
             }
     );
 
+    private String saveToInternalStorage(Bitmap bitmapImage, int id){
+        ContextWrapper cw = new ContextWrapper(getContext());
+        // path to /data/data/yourapp/app_data/imageDir
+        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+        // Create imageDir
+        String name = "img" + String.valueOf(id) + ".jpg";
+        File mypath = new File(directory, name);
+
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(mypath);
+            // Use the compress method on the BitMap object to write image to the OutputStream
+            bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return directory.getAbsolutePath();
+    }
+
+
 
 
     public void setViews() {
-        eventAdapter = new EventAdapter();
+        eventAdapter = new EventAdapter(getActivity());
         recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setAdapter(eventAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));

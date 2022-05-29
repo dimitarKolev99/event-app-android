@@ -32,8 +32,10 @@ public class EventDBAdapter {
     private static final String COLUMN_TITLE = "event_title";
     private static final String COLUMN_DESCRIPTION = "event_description";
     private static final String COLUMN_IMAGE = "event_image";
+    private static final String COLUMN_IMAGE_NAME = "event_image_name";
     private static final String COLUMN_INTERESTED_COUNT = "event_interested_count";
     private static final String COLUMN_LOCATION = "event_location";
+    private static final String COLUMN_DATE = "event_date";
     private static final String COLUMN_TIME = "event_time";
     private static final String COLUMN_CREATED_AT = "event_created_at";
     private static final String COLUMN_UPDATED_AT = "event_updated_at";
@@ -57,8 +59,10 @@ public class EventDBAdapter {
             COLUMN_TITLE,
             COLUMN_DESCRIPTION,
             COLUMN_IMAGE,
+            COLUMN_IMAGE_NAME,
             COLUMN_INTERESTED_COUNT,
             COLUMN_LOCATION,
+            COLUMN_DATE,
             COLUMN_TIME,
             COLUMN_CREATED_AT,
             COLUMN_UPDATED_AT
@@ -121,8 +125,10 @@ public class EventDBAdapter {
             COLUMN_ORGANIZER_ID + " INTEGER NOT NULL, " +
             COLUMN_DESCRIPTION + " TEXT NOT NULL, " +
             COLUMN_IMAGE + " TEXT, " +
+            COLUMN_IMAGE_NAME + " TEXT, " +
             COLUMN_INTERESTED_COUNT + " INTEGER DEFAULT 0, " +
             COLUMN_LOCATION + " TEXT NOT NULL, " +
+            COLUMN_DATE + " TEXT, " +
             COLUMN_TIME + " TEXT, " +
             COLUMN_CREATED_AT + " TEXT DEFAULT CURRENT_TIMESTAMP, " +
             COLUMN_UPDATED_AT + " TEXT DEFAULT CURRENT_TIMESTAMP" +
@@ -186,10 +192,19 @@ public class EventDBAdapter {
             contentValues.put(COLUMN_IMAGE, event.getImage());
         }
 
+        if (event.getImgName() != null) {
+            contentValues.put(COLUMN_IMAGE_NAME, event.getImgName());
+        }
+
+
         contentValues.put(COLUMN_INTERESTED_COUNT, event.getInterested_count());
 
         if (event.getLocation() != null) {
             contentValues.put(COLUMN_LOCATION, event.getLocation());
+        }
+
+        if (event.getDate() != null) {
+            contentValues.put(COLUMN_DATE, event.getDate());
         }
 
         if (event.getTime() != null) {
@@ -229,11 +244,13 @@ public class EventDBAdapter {
                         cursor.getString(2),
                         cursor.getString(3),
                         cursor.getString(4),
-                        cursor.getInt(5),
-                        cursor.getString(6),
+                        cursor.getString(5),
+                        cursor.getInt(6),
                         cursor.getString(7),
                         cursor.getString(8),
-                        cursor.getString(9)
+                        cursor.getString(9),
+                        cursor.getString(10),
+                        cursor.getString(11)
                 );
 
                 events.add(event);

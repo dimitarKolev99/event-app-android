@@ -10,15 +10,18 @@ public class Event {
     String title;
     String description;
     String image;
+    String imgName;
     int interested_count;
     String location;
+    String date;
     String time;
     String created_at;
     String updated_at;
     BitmapToByteArrayHelper bitmapToByteArrayHelper = new BitmapToByteArrayHelper();
 
     public Event(int id, int organizer_id, String title, String description,
-                 String image, int interested_count, String location, String time, String created_at,
+                 String image, String imgName,
+                 int interested_count, String location, String date, String time, String created_at,
                  String updated_at)
     {
         this.id = id;
@@ -26,8 +29,10 @@ public class Event {
         this.title = title;
         this.description = description;
         this.image = image;
+        this.imgName = imgName;
         this.interested_count = interested_count;
         this.location = location;
+        this.date = date;
         this.time = time;
         this.created_at = created_at;
         this.updated_at = updated_at;
@@ -49,6 +54,10 @@ public class Event {
     public void setOrganizer_id(int organizer_id) {
         this.organizer_id = organizer_id;
     }
+
+    public void setDate(String date) { this.date = date; }
+
+    public String getDate() { return date; }
 
     public String getTitle() {
         return title;
@@ -78,6 +87,14 @@ public class Event {
         this.image = image;
     }
 
+
+    public String getImgName() {
+        return imgName;
+    }
+
+    public void setImgName(String imgName) {
+        this.imgName = imgName;
+    }
 //    public void setImage(Bitmap image) {
 //        this.image = image;
 //    }
