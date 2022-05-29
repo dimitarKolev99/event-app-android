@@ -68,6 +68,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Intent intent = getIntent();
         String[] data = intent.getStringArrayExtra("data");
 
+
         bottomNav = findViewById(R.id.bottom_navigation);
 
         bottomNav.setOnNavigationItemSelectedListener(navListener);
@@ -130,8 +131,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void doCall() {
 
         //final String data = NetworkService.INSTANCE.getUsers("https://fakestoreapi.com/products/");
-        Controller controller = new Controller();
-        controller.start();
+//        Controller controller = new Controller();
+//        controller.start();
+
+
         mHandler.post(new Runnable() {
             @Override
             public void run() {

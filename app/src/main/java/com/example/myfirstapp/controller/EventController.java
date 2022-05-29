@@ -1,6 +1,7 @@
 package com.example.myfirstapp.controller;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -19,6 +20,10 @@ public class EventController {
         this.context = context;
     }
 
+    public List<Event> getList() {
+        return list;
+    }
+
     public List<Event> onViewLoaded() {
         try {
             list = eventModel.getAllEvents();
@@ -31,31 +36,36 @@ public class EventController {
         return list;
     }
 
-    public void onAddButtonClicked(Event event) {
+    public boolean onAddButtonClicked(Event event) {
+        //new InsertEventAsyncTask(eventModel).execute(event);
+        boolean success = false;
+        try {
 
-            boolean success = eventModel.addEvent(event);
+            success = eventModel.addEvent(event);
             if (success) {
                 list = eventModel.getAllEvents();
             }
-
-        /*
+        }
         catch (Exception e) {
-//            Log.d("EVENT_CONTROLLER", "fail");
             showErrorToast(e.getMessage());
         }
 
-         */
+
+        return success;
+
     }
 
-    public void onRemoveButtonClicked(Event event) {
+    public boolean onRemoveButtonClicked(Event event) {
+        boolean success = false;
         try {
-            boolean success = eventModel.deleteEvent(event);
+            success = eventModel.deleteEvent(event);
             if (success) {
                 list = eventModel.getAllEvents();
             }
         } catch (Exception e) {
             showErrorToast(e.getMessage());
         }
+        return success;
     }
 
     public void onEditButtonClicked(Event event) {
@@ -72,4 +82,27 @@ public class EventController {
     public void showErrorToast(String errorMessage) {
         Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show();
     }
+
+    /*
+    private static class InsertEventAsyncTask extends AsyncTask<Event, Void, List<Event>> {
+        private EventModel eventModel;
+
+        private InsertEventAsyncTask(EventModel eventModel) {
+            this.eventModel = eventModel;
+        }
+
+        @Override
+        protected List<Event> doInBackground(Event... events) {
+            eventModel.addEvent(events[0]);
+            return eventModel.getAllEvents();
+        }
+
+        @Override
+        protected void onPostExecute(List<Event> events) {
+            super.onPostExecute(events);
+
+        }
+    }
+
+     */
 }

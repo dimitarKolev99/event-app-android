@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -46,7 +47,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 
 public class HomeFragment extends Fragment {
@@ -79,6 +82,8 @@ public class HomeFragment extends Fragment {
 
 
     SharedPreferences prefs;
+
+    List<Event> eventList = null;
 
     @Nullable
     @Override
@@ -167,14 +172,15 @@ public class HomeFragment extends Fragment {
                                     0, location, date, time, formatter.format(datee),
                                     formatter.format(datee));
 
-                            eventController.onAddButtonClicked(event);
+                            new InsertEventAsyncTask(eventController, eventAdapter).execute(event);
+//                            eventController.onAddButtonClicked(event);
 
 //                            eventAdapter.submitList(eventController.onViewLoaded());
 //
 //                              eventAdapter.notifyItemInserted(eventAdapter.getItemCount());
 //                            getActivity().finish();                             //FAIL
 //                            getActivity().startActivity(new Intent(getActivity(), MainActivity.class));
-                            eventAdapter.submitList(eventController.onViewLoaded());
+
                         }
 
                         Toast.makeText(getContext(), "Event saved", Toast.LENGTH_SHORT).show();
@@ -256,7 +262,13 @@ public class HomeFragment extends Fragment {
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
 //                eventViewModel.delete(eventAdapter.getEventAt(viewHolder.getAdapterPosition()));
-                Toast.makeText(getContext(), "Event deleted", Toast.LENGTH_SHORT).show();
+                if (eventController.onRemoveButtonClicked(eventAdapter.getEventAt(viewHolder.getAdapterPosition()))) {
+                    eventAdapter.submitList(eventController.getList());
+                    Toast.makeText(getContext(), "Event deleted", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), "Deletion failed", Toast.LENGTH_SHORT).show();
+                }
+
             }
         }).attachToRecyclerView(recyclerView);
     }
@@ -358,6 +370,36 @@ public class HomeFragment extends Fragment {
     }
 
      */
+
+    private static class InsertEventAsyncTask extends AsyncTask<Event, Void, List<Event>> {
+        private EventController eventController;
+        private EventAdapter eventAdapter;
+
+        private InsertEventAsyncTask(EventController eventController, EventAdapter eventAdapter) {
+            this.eventController = eventController;
+            this.eventAdapter = eventAdapter;
+        }
+
+        @Override
+        protected List<Event> doInBackground(Event... events) {
+            eventController.onAddButtonClicked(events[0]);
+            return eventController.onViewLoaded();
+        }
+
+        @Override
+        protected void onPostExecute(List<Event> events) {
+            super.onPostExecute(events);
+            List<Event> events1 = new ArrayList<Event>();
+            events1.addAll(events);
+            for (int i = 0; i < events1.size(); i++) {
+                Log.d(TAG, events1.get(i).getTitle());
+            }
+
+//            events1.addAll(events);
+//            eventAdapter.submitList(events1);
+        }
+    }
+
 
 }
 
