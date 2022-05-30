@@ -14,6 +14,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.example.myfirstapp.controller.EventController;
 import com.example.myfirstapp.model.EventModel;
@@ -75,6 +76,30 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         goToFragment(HomeFragment.newInstance());
 
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Toast.makeText(this, "Paused Main", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Toast.makeText(this, "Resumed Main", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Toast.makeText(this, "Stopped Main", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Toast.makeText(this, "Started Main", Toast.LENGTH_SHORT).show();
     }
 
     @Override

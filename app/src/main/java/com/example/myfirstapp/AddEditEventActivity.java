@@ -10,12 +10,15 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -32,14 +35,26 @@ import android.widget.Spinner;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.example.myfirstapp.controller.EventAdapter;
+import com.example.myfirstapp.controller.EventController;
+import com.example.myfirstapp.model.Event;
+import com.example.myfirstapp.model.EventModel;
+import com.example.myfirstapp.model.EventModelImpl;
 import com.example.myfirstapp.utils.BitmapToByteArrayHelper;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Random;
 
 public class AddEditEventActivity extends AppCompatActivity {
     public static final String EXTRA_ID =
@@ -69,6 +84,11 @@ public class AddEditEventActivity extends AppCompatActivity {
     private Bitmap bitmap;
     private BitmapToByteArrayHelper bitmapToByteArrayHelper;
     private Uri urii;
+    private EventController eventController;
+    private EventModel eventModel;
+    SharedPreferences prefs;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -209,7 +229,24 @@ public class AddEditEventActivity extends AppCompatActivity {
         data.putExtra(EXTRA_LOCATION, location);
         data.putExtra(HomeFragment.REQUEST_CODE, REQUEST_CODE);
 
-        Log.d("HERE", title);
+
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
+        Date datee = new Date(System.currentTimeMillis());
+
+        Random random = new Random();
+        int rand_id = random.nextInt();
+        String imgName =  "img" + String.valueOf(rand_id) + ".jpg";
+        String path = saveToInternalStorage(bitmap, rand_id);
+
+        Event event = new Event(random.nextInt(),  prefs.getInt(String.valueOf(R.string.pref_user_id), 0),
+                title, description, path, imgName,
+                0, location, date, time, formatter.format(datee),
+                formatter.format(datee));
+
+        eventModel = new EventModelImpl(MyApplication.getEventDBAdapter());
+        eventController = new EventController(eventModel, this);
+        new InsertEventAsyncTask(eventController).execute(event);
+
 
         int id = getIntent().getIntExtra(EXTRA_ID, -1);
         if (id != -1) {
@@ -217,7 +254,7 @@ public class AddEditEventActivity extends AppCompatActivity {
         }
 
         setResult(RESULT_OK, data);
-        finish();
+//        finish();
     }
 
     @Override
@@ -236,6 +273,86 @@ public class AddEditEventActivity extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private String saveToInternalStorage(Bitmap bitmapImage, int id){
+        ContextWrapper cw = new ContextWrapper(AddEditEventActivity.this);
+        // path to /data/data/yourapp/app_data/imageDir
+        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+        // Create imageDir
+        String name = "img" + String.valueOf(id) + ".jpg";
+        File mypath = new File(directory, name);
+
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(mypath);
+            // Use the compress method on the BitMap object to write image to the OutputStream
+            bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return directory.getAbsolutePath();
+    }
+
+
+    private static class InsertEventAsyncTask extends AsyncTask<Event, Void, List<Event>> {
+        private EventController eventController;
+//        private EventAdapter eventAdapter;
+
+        private InsertEventAsyncTask(EventController eventController) {
+            this.eventController = eventController;
+//            this.eventAdapter = eventAdapter;
+        }
+
+        @Override
+        protected List<Event> doInBackground(Event... events) {
+            eventController.onAddButtonClicked(events[0]);
+            return eventController.onViewLoaded();
+        }
+
+        @Override
+        protected void onPostExecute(List<Event> events) {
+            super.onPostExecute(events);
+            List<Event> events1 = new ArrayList<Event>();
+            events1.addAll(events);
+            for (int i = 0; i < events1.size(); i++) {
+                Log.d("TAG", events1.get(i).getTitle());
+            }
+//            eventAdapter.notifyDataSetChanged();
+
+//            events1.addAll(events);
+//            eventAdapter.submitList(events1);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Toast.makeText(this, "Paused Add", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Toast.makeText(this, "Resumed Add", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Toast.makeText(this, "Stopped Add", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Toast.makeText(this, "Started Add", Toast.LENGTH_SHORT).show();
     }
 
 

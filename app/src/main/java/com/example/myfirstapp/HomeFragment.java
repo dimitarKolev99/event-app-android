@@ -28,6 +28,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -91,9 +92,13 @@ public class HomeFragment extends Fragment {
 //        setHasOptionsMenu(true);
         prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         view = inflater.inflate(R.layout.fragment_home, container, false);
-        setViews();
         eventModel = new EventModelImpl(MyApplication.getEventDBAdapter());
         eventController = new EventController(eventModel, getContext());
+
+        GetEventAsyncTask getEventAsyncTask = new GetEventAsyncTask(eventController);
+        getEventAsyncTask.execute();
+
+
 
         Log.d(TAG, "HERE");
         // btn to add event activity
@@ -108,7 +113,6 @@ public class HomeFragment extends Fragment {
         });
 
 // on update
-        eventAdapter.submitList(eventController.onViewLoaded());
 
         /*
         if (eventAdapter.getItemCount() != 0) {
@@ -132,7 +136,8 @@ public class HomeFragment extends Fragment {
                 public void onActivityResult(ActivityResult result) {
                     if (result.getResultCode() == Activity.RESULT_OK &&
                     result.getData().getIntExtra(REQUEST_CODE, 0) == ADD_EVENT_REQUEST) {
-
+                        getActivity().recreate();
+                        /*
                         Intent data = result.getData();
                         String title = data.getStringExtra(AddEditEventActivity.EXTRA_TITLE);
                         String description = data.getStringExtra(AddEditEventActivity.EXTRA_DESCRIPTION);
@@ -172,7 +177,7 @@ public class HomeFragment extends Fragment {
                                     0, location, date, time, formatter.format(datee),
                                     formatter.format(datee));
 
-                            new InsertEventAsyncTask(eventController, eventAdapter).execute(event);
+//                            new InsertEventAsyncTask(eventController, eventAdapter, getActivity()).execute(event);
 //                            eventController.onAddButtonClicked(event);
 
 //                            eventAdapter.submitList(eventController.onViewLoaded());
@@ -183,7 +188,9 @@ public class HomeFragment extends Fragment {
 
                         }
 
-                        Toast.makeText(getContext(), "Event saved", Toast.LENGTH_SHORT).show();
+                         */
+
+//                        Toast.makeText(getContext(), "Event saved", Toast.LENGTH_SHORT).show();
 
                     } else if (result.getResultCode() == Activity.RESULT_OK &&
                             result.getData().getIntExtra(REQUEST_CODE, 0) == EDIT_EVENT_REQUEST) {
@@ -242,8 +249,8 @@ public class HomeFragment extends Fragment {
 
 
 
-    public void setViews() {
-        eventAdapter = new EventAdapter(getActivity());
+    public void setViews(List<Event> eventList) {
+        eventAdapter = new EventAdapter(eventList);
         recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setAdapter(eventAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
@@ -263,7 +270,8 @@ public class HomeFragment extends Fragment {
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
 //                eventViewModel.delete(eventAdapter.getEventAt(viewHolder.getAdapterPosition()));
                 if (eventController.onRemoveButtonClicked(eventAdapter.getEventAt(viewHolder.getAdapterPosition()))) {
-                    eventAdapter.submitList(eventController.getList());
+                    eventAdapter.notifyDataSetChanged();
+//                    eventAdapter.submitList(eventController.getList());
                     Toast.makeText(getContext(), "Event deleted", Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(getContext(), "Deletion failed", Toast.LENGTH_SHORT).show();
@@ -374,10 +382,13 @@ public class HomeFragment extends Fragment {
     private static class InsertEventAsyncTask extends AsyncTask<Event, Void, List<Event>> {
         private EventController eventController;
         private EventAdapter eventAdapter;
+        private FragmentActivity fragmentActivity;
 
-        private InsertEventAsyncTask(EventController eventController, EventAdapter eventAdapter) {
+        private InsertEventAsyncTask(EventController eventController, EventAdapter eventAdapter,
+                                     FragmentActivity fragmentActivity) {
             this.eventController = eventController;
             this.eventAdapter = eventAdapter;
+            this.fragmentActivity = fragmentActivity;
         }
 
         @Override
@@ -394,9 +405,29 @@ public class HomeFragment extends Fragment {
             for (int i = 0; i < events1.size(); i++) {
                 Log.d(TAG, events1.get(i).getTitle());
             }
+            eventAdapter.notifyDataSetChanged();
+            fragmentActivity.recreate();
+        }
+    }
 
-//            events1.addAll(events);
-//            eventAdapter.submitList(events1);
+    private class GetEventAsyncTask extends AsyncTask<Void, Void, List<Event>> {
+        private EventController eventController;
+
+        private GetEventAsyncTask(EventController eventController) {
+            this.eventController = eventController;
+        }
+
+        @Override
+        protected List<Event> doInBackground(Void... voids) {
+            return eventController.onViewLoaded();
+        }
+
+        @Override
+        protected void onPostExecute(List<Event> events) {
+            super.onPostExecute(events);
+            setViews(events);
+//            eventAdapter.notifyDataSetChanged();
+//            fragmentActivity.recreate();
         }
     }
 
