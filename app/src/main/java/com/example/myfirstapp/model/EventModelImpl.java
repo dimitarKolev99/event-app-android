@@ -53,4 +53,9 @@ public class EventModelImpl implements EventModel{
         }
         return null;
     }
+
+    @Override
+    public List<Event> getUserEvents(int id) {
+        return this.eventDBAdapter.getUserEvents(String.valueOf(id));
+    }
 }

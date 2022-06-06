@@ -1,13 +1,6 @@
 package com.example.myfirstapp.controller;
 
-import android.app.Activity;
-import android.app.UiAutomation;
-import android.content.ContentResolver;
 import android.content.Context;
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,19 +11,14 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.myfirstapp.MainActivity;
-import com.example.myfirstapp.MyApplication;
 import com.example.myfirstapp.R;
 import com.example.myfirstapp.model.Event;
+import com.squareup.picasso.Picasso;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
@@ -38,12 +26,27 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
     private OnItemClickListener listener;
 
-    List<Event> eventList;
+    List<Event> eventList = new ArrayList<Event>();
 
-    public EventAdapter(List<Event> eventList) {
-        this.eventList = eventList;
+    private Context context;
+
+    public EventAdapter(List<Event> eventList, Context context) {
+        this.eventList.addAll(eventList);
+        this.context = context;
     }
 
+    public void updateEventsListItems(List<Event> events) {
+        final EventDIffCallback diffCallback = new EventDIffCallback(this.eventList, events);
+        final DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(diffCallback);
+
+        this.eventList.clear();
+        this.eventList.addAll(events);
+        diffResult.dispatchUpdatesTo(this);
+    }
+
+    public void setEventList(List<Event> eventList) {
+        this.eventList = eventList;
+    }
 
     public class EventViewHolder extends RecyclerView.ViewHolder {
         private final TextView titleView;
@@ -116,13 +119,19 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         holder.getDateView().setText(currentEvent.getDate());
         holder.getTimeView().setText(currentEvent.getTime());
 
-        loadImageFromStorage(currentEvent.getImage(), currentEvent.getImgName(), holder.getImage());
+        loadImageFromStorage(currentEvent.getImageUri(), currentEvent.getImgName(), holder.getImage());
 //        holder.getImage().setImageBitmap(bitmap);
     }
 
-    private void loadImageFromStorage(String path, String imgName,ImageView imageView)
+    private void loadImageFromStorage(String path, String imgName, ImageView imageView)
     {
-
+//        String imageUri = path + imgName;
+        File f = new File(path, imgName);
+        Picasso.with(context).load(f).fit().centerCrop()
+                .placeholder(R.drawable.ic_placeholder)
+                .error(R.drawable.ic_close)
+                .into(imageView);
+        /*
         try {
             File f = new File(path, imgName);
             Bitmap b = BitmapFactory.decodeStream(new FileInputStream(f));
@@ -132,6 +141,8 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         {
             e.printStackTrace();
         }
+
+         */
 
     }
 

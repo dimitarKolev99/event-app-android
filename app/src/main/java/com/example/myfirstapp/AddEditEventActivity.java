@@ -20,6 +20,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
@@ -37,6 +38,8 @@ import android.widget.Toast;
 
 import com.example.myfirstapp.controller.EventAdapter;
 import com.example.myfirstapp.controller.EventController;
+import com.example.myfirstapp.internal_storage_helper.InternalStorageHelper;
+import com.example.myfirstapp.internal_storage_helper.InternalStorageHelperImpl;
 import com.example.myfirstapp.model.Event;
 import com.example.myfirstapp.model.EventModel;
 import com.example.myfirstapp.model.EventModelImpl;
@@ -84,11 +87,13 @@ public class AddEditEventActivity extends AppCompatActivity {
     private Bitmap bitmap;
     private BitmapToByteArrayHelper bitmapToByteArrayHelper;
     private Uri urii;
+    private Button btn_save_event;
     private EventController eventController;
     private EventModel eventModel;
     SharedPreferences prefs;
+    InternalStorageHelper internalStorageHelper;
 
-
+    Handler mHandler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,6 +108,9 @@ public class AddEditEventActivity extends AppCompatActivity {
         time_picker = findViewById(R.id.event_time_picker);
         event_location = findViewById(R.id.edit_event_location);
         bitmapToByteArrayHelper = new BitmapToByteArrayHelper();
+        btn_save_event = findViewById(R.id.btn_save_event);
+
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         calendar = Calendar.getInstance();
         DatePickerDialog.OnDateSetListener date = new DatePickerDialog.OnDateSetListener() {
@@ -115,6 +123,28 @@ public class AddEditEventActivity extends AppCompatActivity {
                 updateCalendar();
             }
         };
+
+        eventModel = new EventModelImpl(MyApplication.getEventDBAdapter());
+        eventController = new EventController(eventModel, this);
+
+        internalStorageHelper = new InternalStorageHelperImpl();
+
+        btn_save_event.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (bitmap != null) {
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            saveEvent(bitmap);
+                        }
+                    }).run();
+                } else {
+                    Toast.makeText(AddEditEventActivity.this, "Please " +
+                            "choose an image before continuing.", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
         date_picker.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -143,9 +173,10 @@ public class AddEditEventActivity extends AppCompatActivity {
             }
         });
 
+        /*
         ActionBar actionBar = getSupportActionBar();
         actionBar.setLogo(R.drawable.ic_close);
-        /*
+
         actionBar.setDisplayUseLogoEnabled(true);
         actionBar.setDisplayShowHomeEnabled(true);
         actionBar.setHomeButtonEnabled(true);
@@ -156,9 +187,9 @@ public class AddEditEventActivity extends AppCompatActivity {
             setTitle("Edit event");
             editTextTitle.setText(getIntent().getStringExtra(EXTRA_TITLE));
             editTextDescription.setText(getIntent().getStringExtra(EXTRA_DESCRIPTION));
-            REQUEST_CODE = HomeFragment.EDIT_EVENT_REQUEST;
+            REQUEST_CODE = MainActivity.EDIT_EVENT_REQUEST;
         } else {
-            REQUEST_CODE = HomeFragment.ADD_EVENT_REQUEST;
+            REQUEST_CODE = MainActivity.ADD_EVENT_REQUEST;
             setTitle("Create an event");
         }
 
@@ -219,42 +250,76 @@ public class AddEditEventActivity extends AppCompatActivity {
             return;
         }
 
-        Intent data = new Intent();
-        data.putExtra(EXTRA_TITLE, title);
-        data.putExtra(EXTRA_DESCRIPTION, description);
-//        data.putExtra(EXTRA_IMAGE, bitmap);
-        data.putExtra(EXTRA_DATE, date);
-        data.putExtra(EXTRA_URI, urii);
-        data.putExtra(EXTRA_TIME, time);
-        data.putExtra(EXTRA_LOCATION, location);
-        data.putExtra(HomeFragment.REQUEST_CODE, REQUEST_CODE);
-
+        Random random = new Random();
+        int rand_id = random.nextInt();
 
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
         Date datee = new Date(System.currentTimeMillis());
 
-        Random random = new Random();
-        int rand_id = random.nextInt();
         String imgName =  "img" + String.valueOf(rand_id) + ".jpg";
-        String path = saveToInternalStorage(bitmap, rand_id);
 
-        Event event = new Event(random.nextInt(),  prefs.getInt(String.valueOf(R.string.pref_user_id), 0),
+        String path =
+                internalStorageHelper.saveToInternalStorage(bitmap, rand_id, AddEditEventActivity.this);
+        //I/O OPERATION -> SLOW
+
+        Intent data = new Intent();
+
+        data.putExtra(MainActivity.REQUEST_CODE, REQUEST_CODE);
+
+        Log.d("PREFS USER_ID: ", String.valueOf(prefs.getInt(String.valueOf(R.string.pref_user_id), 0)));
+
+        Event event = new Event(rand_id,  prefs.getInt(String.valueOf(R.string.pref_user_id), 0),
                 title, description, path, imgName,
                 0, location, date, time, formatter.format(datee),
                 formatter.format(datee));
-
-        eventModel = new EventModelImpl(MyApplication.getEventDBAdapter());
-        eventController = new EventController(eventModel, this);
-        new InsertEventAsyncTask(eventController).execute(event);
-
 
         int id = getIntent().getIntExtra(EXTRA_ID, -1);
         if (id != -1) {
             data.putExtra(EXTRA_ID, id);
         }
 
+        doCall(event, data);
+
+        /*
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                doCall(event, data);
+            }
+        }).start();
+
+         */
+
+
+//        new InsertEventAsyncTask(eventController).execute(event);
+        /*
+        int id = getIntent().getIntExtra(EXTRA_ID, -1);
+        if (id != -1) {
+            data.putExtra(EXTRA_ID, id);
+        }
+         */
         setResult(RESULT_OK, data);
-//        finish();
+
+    }
+
+    private void doCall(Event event, Intent data) {
+
+        boolean success = eventController.onAddButtonClicked(event);
+        Log.d("ADD_EDIT", String.valueOf(success));
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+//                if (success) {
+                    Toast.makeText(AddEditEventActivity.this, "Insert Success", Toast.LENGTH_SHORT).show();
+
+//                    setResult(RESULT_OK, data);
+                    finish();
+//                } else {
+                    Toast.makeText(AddEditEventActivity.this, "Insert Fail", Toast.LENGTH_SHORT).show();
+//                }
+            }
+        });
+
     }
 
     @Override
@@ -301,7 +366,7 @@ public class AddEditEventActivity extends AppCompatActivity {
     }
 
 
-    private static class InsertEventAsyncTask extends AsyncTask<Event, Void, List<Event>> {
+    private class InsertEventAsyncTask extends AsyncTask<Event, Void, Boolean> {
         private EventController eventController;
 //        private EventAdapter eventAdapter;
 
@@ -311,18 +376,17 @@ public class AddEditEventActivity extends AppCompatActivity {
         }
 
         @Override
-        protected List<Event> doInBackground(Event... events) {
-            eventController.onAddButtonClicked(events[0]);
-            return eventController.onViewLoaded();
+        protected Boolean doInBackground(Event... events) {
+            return eventController.onAddButtonClicked(events[0]);
         }
 
         @Override
-        protected void onPostExecute(List<Event> events) {
-            super.onPostExecute(events);
-            List<Event> events1 = new ArrayList<Event>();
-            events1.addAll(events);
-            for (int i = 0; i < events1.size(); i++) {
-                Log.d("TAG", events1.get(i).getTitle());
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
+            if (success) {
+                finish();
+            } else {
+                Toast.makeText(AddEditEventActivity.this, "Inserting failed", Toast.LENGTH_SHORT).show();
             }
 //            eventAdapter.notifyDataSetChanged();
 

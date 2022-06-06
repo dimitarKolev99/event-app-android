@@ -8,8 +8,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.widget.Toast;
 
-import com.example.myfirstapp.MainActivity;
 import com.example.myfirstapp.R;
 import com.example.myfirstapp.utils.BitmapToByteArrayHelper;
 
@@ -172,7 +172,15 @@ public class EventDBAdapter {
 
     public boolean insert(Event event) {
 
-        return sqLiteDatabase.insert(EVENT_TABLE, null, loadContentValues(event)) > 0;
+        long result;
+        result = sqLiteDatabase.insert(EVENT_TABLE, null, loadContentValues(event));
+
+        if (result == -1) {
+            Toast.makeText(context, "Failed!", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(context, "Success!", Toast.LENGTH_SHORT).show();
+        }
+        return result > 0;
 
     }
 
@@ -184,12 +192,11 @@ public class EventDBAdapter {
         }
 
         if (event.getDescription() != null) {
-            Log.d("DB", "NOT NULL");
             contentValues.put(COLUMN_DESCRIPTION, event.getDescription());
         }
 
-        if (event.getImage() != null) {
-            contentValues.put(COLUMN_IMAGE, event.getImage());
+        if (event.getImageUri() != null) {
+            contentValues.put(COLUMN_IMAGE, event.getImageUri());
         }
 
         if (event.getImgName() != null) {
@@ -261,7 +268,42 @@ public class EventDBAdapter {
         return events;
     }
 
+    public List<Event> getUserEvents(String id) {
+        List<Event> events = new ArrayList<Event>();
+
+        Cursor cursor = sqLiteDatabase.query(EVENT_TABLE, event_table_columns, "event_organizer_id = ?",
+                new String[] {id}, null,
+                null, null);
+
+        Log.d(TAG, "HERE");
+
+        if (cursor != null && cursor.getCount() > 0) {
+            while (cursor.moveToNext()) {
+                Event event = new Event(
+                        cursor.getInt(0),
+                        cursor.getInt(1),
+                        cursor.getString(2),
+                        cursor.getString(3),
+                        cursor.getString(4),
+                        cursor.getString(5),
+                        cursor.getInt(6),
+                        cursor.getString(7),
+                        cursor.getString(8),
+                        cursor.getString(9),
+                        cursor.getString(10),
+                        cursor.getString(11)
+                );
+
+                events.add(event);
+            }
+            cursor.close();
+        }
+
+        return events;
+    }
+
     public boolean delete(Event event) {
+
         return sqLiteDatabase.delete(EVENT_TABLE, COLUMN_EVENT_ID+ " = " + event.getId(), null) > 0;
     }
 

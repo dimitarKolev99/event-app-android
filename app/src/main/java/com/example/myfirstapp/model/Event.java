@@ -79,7 +79,7 @@ public class Event {
 //        return bitmapToByteArrayHelper.getByteArrayFromBitmap(image);
 //    }
 
-    public String getImage() {
+    public String getImageUri() {
         return image;
     }
 

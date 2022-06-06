@@ -24,6 +24,10 @@ public class EventController {
         return list;
     }
 
+    public List<Event> getUserEvents(int id) {
+        return eventModel.getUserEvents(id);
+    }
+
     public List<Event> onViewLoaded() {
         try {
             list = eventModel.getAllEvents();
@@ -80,7 +84,8 @@ public class EventController {
     }
 
     public void showErrorToast(String errorMessage) {
-        Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show();
+//        Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show();
+        Log.d("EVENT_CONTROLLER", "ERROR in CONTROLLER");
     }
 
     /*

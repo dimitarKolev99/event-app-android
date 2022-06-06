@@ -41,7 +41,7 @@
             android:value=".MainActivity" />
 
         <activity
-            android:theme="@style/Theme.MyFirstApp.NoActionBar"
+            android:theme="@style/Theme.MyFirstApp"
             android:name=".MainActivity"
             android:exported="true" />
     </application>
