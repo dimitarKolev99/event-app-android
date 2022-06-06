@@ -37,6 +37,7 @@ import android.widget.Toast;
 
 import com.example.myfirstapp.controller.EventAdapter;
 import com.example.myfirstapp.controller.EventController;
+import com.example.myfirstapp.controller.OnItemClickListener;
 import com.example.myfirstapp.model.Event;
 import com.example.myfirstapp.model.EventModel;
 import com.example.myfirstapp.model.EventModelImpl;
@@ -150,6 +151,24 @@ public class MainActivity extends AppCompatActivity {
     public void setViews() {
 
         eventAdapter = new EventAdapter(new ArrayList<Event>(), MainActivity.this);
+        eventAdapter.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onEventClick(Event event) {
+                Intent intent = new Intent(MainActivity.this, AddEditEventActivity.class);
+                intent.putExtra(REQUEST_CODE, EDIT_EVENT_REQUEST);
+                intent.putExtra(AddEditEventActivity.EXTRA_ID, event.getId());
+                intent.putExtra(AddEditEventActivity.EXTRA_TITLE, event.getTitle());
+                intent.putExtra(AddEditEventActivity.EXTRA_DESCRIPTION, event.getDescription());
+                intent.putExtra(AddEditEventActivity.EXTRA_DATE, event.getDate());
+                intent.putExtra(AddEditEventActivity.EXTRA_TIME, event.getTime());
+                intent.putExtra(AddEditEventActivity.EXTRA_LOCATION, event.getLocation());
+                intent.putExtra(AddEditEventActivity.EXTRA_IMAGE_NAME, event.getImgName());
+                intent.putExtra(AddEditEventActivity.EXTRA_IMAGE_URI, event.getImageUri());
+
+                openActivityForResult(intent);
+
+            }
+        });
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setAdapter(eventAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
@@ -204,31 +223,6 @@ public class MainActivity extends AppCompatActivity {
                 super.onOptionsItemSelected(item);
         }
         return true;
-    }
-
-    private String saveToInternalStorage(Bitmap bitmapImage, int id){
-        ContextWrapper cw = new ContextWrapper(MainActivity.this);
-        // path to /data/data/yourapp/app_data/imageDir
-        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
-        // Create imageDir
-        String name = "img" + String.valueOf(id) + ".jpg";
-        File mypath = new File(directory, name);
-
-        FileOutputStream fos = null;
-        try {
-            fos = new FileOutputStream(mypath);
-            // Use the compress method on the BitMap object to write image to the OutputStream
-            bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                fos.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return directory.getAbsolutePath();
     }
 
 

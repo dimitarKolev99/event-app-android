@@ -56,13 +56,14 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         private final ImageView image;
 
 
-        public EventViewHolder(@NonNull View itemView) {
+        public EventViewHolder(@NonNull View itemView, OnItemClickListener listener) {
             super(itemView);
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     int position = getAdapterPosition();
                     if (listener != null && position != RecyclerView.NO_POSITION) {
+                        listener.onEventClick(getEventAt(position));
                         Toast.makeText(view.getContext(), "Clicked item" + position, Toast.LENGTH_SHORT).show();
                     }
 
@@ -105,7 +106,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     public EventViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.my_row, parent, false);
-        return new EventViewHolder(v);
+        return new EventViewHolder(v, listener);
     }
 
     @Override
@@ -125,25 +126,11 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
     private void loadImageFromStorage(String path, String imgName, ImageView imageView)
     {
-//        String imageUri = path + imgName;
         File f = new File(path, imgName);
         Picasso.with(context).load(f).fit().centerCrop()
                 .placeholder(R.drawable.ic_placeholder)
                 .error(R.drawable.ic_close)
                 .into(imageView);
-        /*
-        try {
-            File f = new File(path, imgName);
-            Bitmap b = BitmapFactory.decodeStream(new FileInputStream(f));
-            imageView.setImageBitmap(b);
-        }
-        catch (FileNotFoundException e)
-        {
-            e.printStackTrace();
-        }
-
-         */
-
     }
 
     public Event getEventAt(int position) {

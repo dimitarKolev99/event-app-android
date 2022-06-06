@@ -11,7 +11,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.example.myfirstapp.model.User;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -44,14 +43,6 @@ public class RegisterActivity extends AppCompatActivity {
 
                 edit.putInt(getString(R.string.pref_user_id), user_id);
                 edit.commit();
-
-                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
-                Date date = new Date(System.currentTimeMillis());
-
-                User user = new User(user_id, enter_username.getText().toString(), formatter.format(date),
-                        formatter.format(date));
-
-                //Save the user to db here
 
                 Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
                 startActivity(intent);

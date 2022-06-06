@@ -2,6 +2,7 @@ package com.example.myfirstapp.internal_storage_helper;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.widget.ImageView;
 
 public interface InternalStorageHelper {
 
@@ -12,5 +13,14 @@ public interface InternalStorageHelper {
      * @param context
      * @return the path to the image
      */
-    public String saveToInternalStorage(Bitmap bitmapImage, int id, Context context);
+    String saveToInternalStorage(Bitmap bitmapImage, int id, Context context);
+
+    /**
+     * load the bitmap into the imageView
+     * @param path
+     * @param imgName
+     * @param imageView
+     * @param context
+     */
+    void loadImageFromStorage(String path, String imgName, ImageView imageView, Context context);
 }

@@ -3,8 +3,11 @@ package com.example.myfirstapp.internal_storage_helper;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.graphics.Bitmap;
+import android.widget.ImageView;
 
 import com.example.myfirstapp.AddEditEventActivity;
+import com.example.myfirstapp.R;
+import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -39,5 +42,14 @@ public class InternalStorageHelperImpl implements InternalStorageHelper{
             }
         }
         return directory.getAbsolutePath();
+    }
+
+    public void loadImageFromStorage(String path, String imgName, ImageView imageView, Context context)
+    {
+        File f = new File(path, imgName);
+        Picasso.with(context).load(f).fit().centerCrop()
+                .placeholder(R.drawable.ic_placeholder)
+                .error(R.drawable.ic_close)
+                .into(imageView);
     }
 }
