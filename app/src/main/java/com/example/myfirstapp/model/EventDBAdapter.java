@@ -58,8 +58,8 @@ public class EventDBAdapter {
             COLUMN_ORGANIZER_ID,
             COLUMN_TITLE,
             COLUMN_DESCRIPTION,
-            COLUMN_IMAGE,
-            COLUMN_IMAGE_NAME,
+//            COLUMN_IMAGE,
+//            COLUMN_IMAGE_NAME,
             COLUMN_INTERESTED_COUNT,
             COLUMN_LOCATION,
             COLUMN_DATE,
@@ -243,7 +243,10 @@ public class EventDBAdapter {
         Cursor cursor = sqLiteDatabase.query(EVENT_TABLE, event_table_columns, null, null, null,
                 null, null);
 
-        if (cursor != null && cursor.getCount() > 0) {
+
+        /*
+        if (cursor != null && cursor.getCount() > 0 && cursor.getString(4) != null
+        && cursor.getString(5) != null) {
             while (cursor.moveToNext()) {
                 Event event = new Event(
                         cursor.getInt(0),
@@ -258,6 +261,29 @@ public class EventDBAdapter {
                         cursor.getString(9),
                         cursor.getString(10),
                         cursor.getString(11)
+                );
+
+                events.add(event);
+            }
+            cursor.close();
+        }
+
+         */
+
+        Log.d(TAG, cursor.getString(6));
+         if (cursor != null && cursor.getCount() > 0) {
+            while (cursor.moveToNext()) {
+                Event event = new Event(
+                        cursor.getInt(0),
+                        cursor.getInt(1),
+                        cursor.getString(2),
+                        cursor.getString(3),
+                        cursor.getInt(4),
+                        cursor.getString(5),
+                        cursor.getString(6),
+                        cursor.getString(7),
+                        cursor.getString(8),
+                        cursor.getString(9)
                 );
 
                 events.add(event);
@@ -307,7 +333,7 @@ public class EventDBAdapter {
         return sqLiteDatabase.delete(EVENT_TABLE, COLUMN_EVENT_ID+ " = " + event.getId(), null) > 0;
     }
 
-    private static class EventDBHelper extends SQLiteOpenHelper {
+    public static class EventDBHelper extends SQLiteOpenHelper {
 
         public EventDBHelper(Context context, String databaseName,
                              SQLiteDatabase.CursorFactory factory,
