@@ -84,10 +84,10 @@ public class MainActivity extends AppCompatActivity {
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        eventModel = new EventModelImpl(MyApplication.getEventDBAdapter());
-        eventController = new EventController(eventModel, this);
+//        eventModel = new EventModelImpl(MyApplication.getEventDBAdapter());
+//        eventController = new EventController(eventModel, this);
         setViews();
-        new GetEventAsyncTask(eventController).execute();
+//        new GetEventAsyncTask(eventController).execute();
 
         /*
         new Thread(new Runnable() {
@@ -177,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void updateResView(List<Event> eventList) {
-        eventAdapter.updateEventsListItems(eventList);
+//        eventAdapter.updateEventsListItems(eventList);
     }
 
     private void setItemTouchHelper() {
@@ -190,6 +190,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                /*
                 if (eventController.onRemoveButtonClicked(eventAdapter.getEventAt(viewHolder.getAdapterPosition()))) {
                     eventList = eventController.getList();
                     updateResView(eventList);
@@ -199,7 +200,11 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this, "Deletion failed", Toast.LENGTH_SHORT).show();
                 }
 
+                 */
+
             }
+
+
         }).attachToRecyclerView(recyclerView);
     }
 
@@ -216,9 +221,12 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.my_events:
                 //Query the db here
+                /*
                 eventList = eventController.getUserEvents(sharedPreferences.getInt(String.valueOf(R.string.pref_user_id), 0));
                 updateResView(eventList);
                 recyclerView.setAdapter(eventAdapter);
+
+                 */
             default:
                 super.onOptionsItemSelected(item);
         }

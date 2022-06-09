@@ -16,6 +16,8 @@ import com.example.myfirstapp.utils.BitmapToByteArrayHelper;
 import java.util.ArrayList;
 import java.util.List;
 
+
+
 public class EventDBAdapter {
     private static final String TAG = EventDBAdapter.class.getSimpleName();
 
@@ -53,7 +55,7 @@ public class EventDBAdapter {
     private static final String COLUMN_EVENT_USERS_EVENT_ID = "event_id";
     private static final String COLUMN_EVENT_USERS_USER_ID = "user_id";
 
-    private static final String[] event_table_columns = new String[] {
+    private static final String[] event_table_columns = new String[]{
             COLUMN_EVENT_ID,
             COLUMN_ORGANIZER_ID,
             COLUMN_TITLE,
@@ -68,7 +70,7 @@ public class EventDBAdapter {
             COLUMN_UPDATED_AT
     };
 
-    private static final String[] user_table_columns = new String[] {
+    private static final String[] user_table_columns = new String[]{
             COLUMN_USER_ID,
             COLUMN_USERNAME,
             COLUMN_EMAIL,
@@ -76,7 +78,7 @@ public class EventDBAdapter {
             COLUMN_USER_UPDATED_AT
     };
 
-    private static final String[] event_users_table_columns = new String[] {
+    private static final String[] event_users_table_columns = new String[]{
             COLUMN_EVENT_USERS_EVENT_ID,
             COLUMN_EVENT_USERS_USER_ID
     };
@@ -99,9 +101,9 @@ public class EventDBAdapter {
             " FOREIGN KEY (" + COLUMN_ORGANIZER_ID + ") REFERENCES " + USER_TABLE + "(user_id)" +
             ");";
 
-     */
 
-    /*
+
+
     private static final String CREATE_EVENT_TABLE = "CREATE TABLE " + EVENT_TABLE +
             "(" +
             COLUMN_EVENT_ID + " INTEGER PRIMARY KEY, " +
@@ -118,6 +120,7 @@ public class EventDBAdapter {
 
      */
 
+
     private static final String CREATE_EVENT_TABLE = "CREATE TABLE " + EVENT_TABLE +
             "(" +
             COLUMN_EVENT_ID + " INTEGER PRIMARY KEY, " +
@@ -133,7 +136,7 @@ public class EventDBAdapter {
             COLUMN_CREATED_AT + " TEXT DEFAULT CURRENT_TIMESTAMP, " +
             COLUMN_UPDATED_AT + " TEXT DEFAULT CURRENT_TIMESTAMP" +
             ");";
-
+    /*
     private static final String CREATE_USER_TABLE = "CREATE TABLE " + USER_TABLE +
             "(" +
             COLUMN_USER_ID + " INTEGER PRIMARY KEY, " +
@@ -151,7 +154,7 @@ public class EventDBAdapter {
             "ON UPDATE CASCADE, " +
             " PRIMARY KEY (" + COLUMN_EVENT_USERS_EVENT_ID + ", " + COLUMN_EVENT_USERS_USER_ID + ")" +
             ");";
-
+*/
     private SQLiteDatabase sqLiteDatabase;
     private static EventDBAdapter instance;
 
@@ -233,8 +236,8 @@ public class EventDBAdapter {
     }
 
     public boolean update(Event event) {
-        return sqLiteDatabase.update(EVENT_TABLE, loadContentValues(event), COLUMN_EVENT_ID+ " = " + event.getId()
-        , null) > 0;
+        return sqLiteDatabase.update(EVENT_TABLE, loadContentValues(event), COLUMN_EVENT_ID + " = " + event.getId()
+                , null) > 0;
     }
 
     public List<Event> getAllEvents() {
@@ -243,8 +246,6 @@ public class EventDBAdapter {
         Cursor cursor = sqLiteDatabase.query(EVENT_TABLE, event_table_columns, null, null, null,
                 null, null);
 
-
-        /*
         if (cursor != null && cursor.getCount() > 0 && cursor.getString(4) != null
         && cursor.getString(5) != null) {
             while (cursor.moveToNext()) {
@@ -268,10 +269,10 @@ public class EventDBAdapter {
             cursor.close();
         }
 
-         */
+
 
         Log.d(TAG, cursor.getString(6));
-         if (cursor != null && cursor.getCount() > 0) {
+        if (cursor != null && cursor.getCount() > 0) {
             while (cursor.moveToNext()) {
                 Event event = new Event(
                         cursor.getInt(0),
@@ -298,7 +299,7 @@ public class EventDBAdapter {
         List<Event> events = new ArrayList<Event>();
 
         Cursor cursor = sqLiteDatabase.query(EVENT_TABLE, event_table_columns, "event_organizer_id = ?",
-                new String[] {id}, null,
+                new String[]{id}, null,
                 null, null);
 
         Log.d(TAG, "HERE");
@@ -330,7 +331,7 @@ public class EventDBAdapter {
 
     public boolean delete(Event event) {
 
-        return sqLiteDatabase.delete(EVENT_TABLE, COLUMN_EVENT_ID+ " = " + event.getId(), null) > 0;
+        return sqLiteDatabase.delete(EVENT_TABLE, COLUMN_EVENT_ID + " = " + event.getId(), null) > 0;
     }
 
     public static class EventDBHelper extends SQLiteOpenHelper {
@@ -350,20 +351,14 @@ public class EventDBAdapter {
 
         @Override
         public void onCreate(SQLiteDatabase sqLiteDatabase) {
-//            sqLiteDatabase.execSQL(CREATE_USER_TABLE);
             sqLiteDatabase.execSQL(CREATE_EVENT_TABLE);
-//            sqLiteDatabase.execSQL(CREATE_EVENT_USERS_TABLE);
         }
 
         @Override
         public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
             sqLiteDatabase.execSQL("DROP TABLE IF EXISTS "+ EVENT_TABLE);
-//            sqLiteDatabase.execSQL("DROP TABLE IF EXISTS "+ USER_TABLE);
-//            sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + EVENT_USERS_TABLE);
             onCreate(sqLiteDatabase);
 
         }
-
-
     }
 }

@@ -8,6 +8,8 @@ import android.preference.PreferenceManager;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.Random;
+
 public class SplashActivity extends AppCompatActivity {
 
     Handler mHandler = new Handler();
@@ -21,6 +23,12 @@ public class SplashActivity extends AppCompatActivity {
         if(!previouslyStarted) {
             SharedPreferences.Editor edit = prefs.edit();
             edit.putBoolean(getString(R.string.pref_previously_started), Boolean.TRUE);
+            edit.commit();
+
+            Random random = new Random();
+            int user_id = random.nextInt();
+
+            edit.putInt(getString(R.string.pref_user_id), user_id);
             edit.commit();
 
             Intent intent = new Intent(this, RegisterActivity.class);

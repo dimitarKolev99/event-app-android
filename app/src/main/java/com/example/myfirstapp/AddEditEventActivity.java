@@ -110,8 +110,8 @@ public class AddEditEventActivity extends AppCompatActivity {
             }
         };
 
-        eventModel = new EventModelImpl(MyApplication.getEventDBAdapter());
-        eventController = new EventController(eventModel, this);
+//        eventModel = new EventModelImpl(MyApplication.getEventDBAdapter());
+//        eventController = new EventController(eventModel, this);
 
         internalStorageHelper = new InternalStorageHelperImpl();
         saveEventHelper = new SaveEventHelperImpl();
@@ -236,9 +236,9 @@ public class AddEditEventActivity extends AppCompatActivity {
 
     private void doCall(Event event, int id) {
         if (id != -1) {
-            eventController.onEditButtonClicked(event);
+//            eventController.onEditButtonClicked(event);
         } else {
-            eventController.onAddButtonClicked(event);
+//            eventController.onAddButtonClicked(event);
         }
         mHandler.post(new Runnable() {
             @Override
