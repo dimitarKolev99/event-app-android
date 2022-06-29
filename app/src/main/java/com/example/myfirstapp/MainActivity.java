@@ -5,50 +5,30 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
-import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
 import com.example.myfirstapp.controller.EventAdapter;
-import com.example.myfirstapp.controller.EventController;
+import com.example.myfirstapp.controller.EventControllerImpl;
 import com.example.myfirstapp.controller.OnItemClickListener;
 import com.example.myfirstapp.model.Event;
 import com.example.myfirstapp.model.EventModel;
-import com.example.myfirstapp.model.EventModelImpl;
-import com.example.myfirstapp.network.Controller;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.navigation.NavigationView;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
 
     Handler mHandler = new Handler();
 
-    EventController eventController;
+    EventControllerImpl eventControllerImpl;
 
     private EventModel eventModel;
 
@@ -76,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
     List<Event> eventList = new ArrayList<>();
 
     SharedPreferences sharedPreferences;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -251,10 +232,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void doCall() {
 
-        //final String data = NetworkService.INSTANCE.getUsers("https://fakestoreapi.com/products/");
-//        Controller controller = new Controller();
-//        controller.start();
-
 
         mHandler.post(new Runnable() {
             @Override
@@ -267,18 +244,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private static class InsertEventAsyncTask extends AsyncTask<Event, Void, List<Event>> {
-        private EventController eventController;
+        private EventControllerImpl eventControllerImpl;
         private EventAdapter eventAdapter;
 
-        private InsertEventAsyncTask(EventController eventController, EventAdapter eventAdapter) {
-            this.eventController = eventController;
+        private InsertEventAsyncTask(EventControllerImpl eventControllerImpl, EventAdapter eventAdapter) {
+            this.eventControllerImpl = eventControllerImpl;
             this.eventAdapter = eventAdapter;
         }
 
         @Override
         protected List<Event> doInBackground(Event... events) {
-            eventController.onAddButtonClicked(events[0]);
-            return eventController.onViewLoaded();
+            eventControllerImpl.onAddButtonClicked(events[0]);
+            return eventControllerImpl.onViewLoaded();
         }
 
         @Override
@@ -289,15 +266,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private class GetEventAsyncTask extends AsyncTask<Void, Void, List<Event>> {
-        private EventController eventController;
+        private EventControllerImpl eventControllerImpl;
 
-        private GetEventAsyncTask(EventController eventController) {
-            this.eventController = eventController;
+        private GetEventAsyncTask(EventControllerImpl eventControllerImpl) {
+            this.eventControllerImpl = eventControllerImpl;
         }
 
         @Override
         protected List<Event> doInBackground(Void... voids) {
-            return eventController.onViewLoaded();
+            return eventControllerImpl.onViewLoaded();
         }
 
         @Override

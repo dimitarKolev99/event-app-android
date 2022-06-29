@@ -3,6 +3,7 @@ package com.example.myfirstapp.network;
 import android.os.Build;
 import android.util.Log;
 
+import com.example.myfirstapp.model.Event;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -14,7 +15,7 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class Controller implements Callback<List<Event>> {
+public class NetworkController implements Callback<List<Event>> {
 
     static final String BASE_URL = "http://192.168.0.101:3000";
 
@@ -39,9 +40,9 @@ public class Controller implements Callback<List<Event>> {
     @Override
     public void onResponse(Call<List<Event>> call, Response<List<Event>> response) {
         if (response.isSuccessful()) {
-            List<Event> userList = response.body();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && userList != null) {
-                userList.forEach(user -> Log.d(TAG, user.id));
+            List<Event> eventList = response.body();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && eventList != null) {
+                eventList.forEach(event -> Log.d(TAG, String.valueOf(event.getId())));
             }
         } else {
             Log.d(TAG, String.valueOf(response.errorBody()));
@@ -52,4 +53,5 @@ public class Controller implements Callback<List<Event>> {
     public void onFailure(Call<List<Event>> call, Throwable t) {
         t.printStackTrace();
     }
+
 }

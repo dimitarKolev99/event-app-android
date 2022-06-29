@@ -5,23 +5,23 @@ import android.util.Log;
 import java.util.List;
 
 public class EventModelImpl implements EventModel{
-    EventDBAdapter eventDBAdapter;
+    DBHelper dbHelper;
 
     List<Event> eventList;
 
-    public EventModelImpl(EventDBAdapter eventDBAdapter) {
-        this.eventDBAdapter = eventDBAdapter;
-        eventList = this.eventDBAdapter.getAllEvents();
+    public EventModelImpl(DBHelper dbHelper) {
+        this.dbHelper = dbHelper;
+        eventList = this.dbHelper.getAllEvents();
     }
 
     private void refresh() {
         eventList.clear();
-        eventList = this.eventDBAdapter.getAllEvents();
+        eventList = this.dbHelper.getAllEvents();
     }
 
     @Override
     public boolean addEvent(Event event) {
-        boolean addSuccess = eventDBAdapter.insert(event);
+        boolean addSuccess = dbHelper.insert(event);
         if (addSuccess) {
             refresh();
         }
@@ -30,7 +30,7 @@ public class EventModelImpl implements EventModel{
 
     @Override
     public boolean updateEvent(Event event) {
-        boolean updateSuccess = eventDBAdapter.update(event);
+        boolean updateSuccess = dbHelper.update(event);
         if (updateSuccess) {
             refresh();
         }
@@ -39,7 +39,7 @@ public class EventModelImpl implements EventModel{
 
     @Override
     public boolean deleteEvent(Event event) {
-        boolean deleteSuccess = eventDBAdapter.delete(event);
+        boolean deleteSuccess = dbHelper.delete(event);
         if (deleteSuccess) {
             refresh();
         }
@@ -56,6 +56,6 @@ public class EventModelImpl implements EventModel{
 
     @Override
     public List<Event> getUserEvents(int id) {
-        return this.eventDBAdapter.getUserEvents(String.valueOf(id));
+        return this.dbHelper.getUserEvents(String.valueOf(id));
     }
 }

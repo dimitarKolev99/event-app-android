@@ -12,14 +12,13 @@ import java.util.Random;
 
 public class SplashActivity extends AppCompatActivity {
 
-    Handler mHandler = new Handler();
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
         boolean previouslyStarted = prefs.getBoolean(getString(R.string.pref_previously_started), false);
+
         if(!previouslyStarted) {
             SharedPreferences.Editor edit = prefs.edit();
             edit.putBoolean(getString(R.string.pref_previously_started), Boolean.TRUE);
@@ -31,13 +30,10 @@ public class SplashActivity extends AppCompatActivity {
             edit.putInt(getString(R.string.pref_user_id), user_id);
             edit.commit();
 
-            Intent intent = new Intent(this, RegisterActivity.class);
-            startActivity(intent);
-            finish();
-        } else {
-            Intent intent = new Intent(this, MainActivity.class);
-            startActivity(intent);
-            finish();
         }
+
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+        finish();
     }
 }

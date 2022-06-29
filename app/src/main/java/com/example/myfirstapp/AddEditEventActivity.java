@@ -27,14 +27,13 @@ import android.widget.ImageView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
-import com.example.myfirstapp.controller.EventController;
+import com.example.myfirstapp.controller.EventControllerImpl;
 import com.example.myfirstapp.controller.SaveEventHelper;
 import com.example.myfirstapp.controller.SaveEventHelperImpl;
 import com.example.myfirstapp.internal_storage_helper.InternalStorageHelper;
 import com.example.myfirstapp.internal_storage_helper.InternalStorageHelperImpl;
 import com.example.myfirstapp.model.Event;
 import com.example.myfirstapp.model.EventModel;
-import com.example.myfirstapp.model.EventModelImpl;
 import com.example.myfirstapp.utils.BitmapToByteArrayHelper;
 
 import java.io.FileNotFoundException;
@@ -73,7 +72,7 @@ public class AddEditEventActivity extends AppCompatActivity {
     private BitmapToByteArrayHelper bitmapToByteArrayHelper;
     private Uri urii;
     private Button btn_save_event;
-    private EventController eventController;
+    private EventControllerImpl eventControllerImpl;
     private EventModel eventModel;
     SharedPreferences prefs;
     InternalStorageHelper internalStorageHelper;
@@ -120,12 +119,12 @@ public class AddEditEventActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (bitmap != null && REQUEST_CODE == MainActivity.ADD_EVENT_REQUEST) {
-                    Event event = saveEventHelper.saveEvent(bitmap, editTextTitle, editTextDescription, date_picker,
+                    Event event = saveEventHelper.saveEditEvent(bitmap, editTextTitle, editTextDescription, date_picker,
                             time_picker, event_location, AddEditEventActivity.this, prefs);
                     setResForParAct(event);
                     //                    saveEvent(bitmap);
                 } else if (bitmap != null && REQUEST_CODE == MainActivity.EDIT_EVENT_REQUEST) {
-                    Event event = saveEventHelper.saveEventEdit(bitmap, editTextTitle, editTextDescription, date_picker,
+                    Event event = saveEventHelper.editEvent(bitmap, editTextTitle, editTextDescription, date_picker,
                             time_picker, event_location, AddEditEventActivity.this, prefs,
                             getIntent().getIntExtra(EXTRA_ID, -1));
                     setResForParAct(event);
@@ -259,7 +258,7 @@ public class AddEditEventActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.save_event:
-                Event event = saveEventHelper.saveEvent(bitmap, editTextTitle, editTextDescription, date_picker,
+                Event event = saveEventHelper.saveEditEvent(bitmap, editTextTitle, editTextDescription, date_picker,
                         time_picker, event_location, AddEditEventActivity.this, prefs);
                 setResForParAct(event);
                 return true;

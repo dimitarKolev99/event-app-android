@@ -56,7 +56,7 @@ public class EspressoTest {
             new ActivityScenarioRule<MainActivity>(MainActivity.class);
 
     @Test
-    public void fabIsDisplayed() {
+    public void clickingFloatingActionButtonOpensNewActivity() {
         onView(withId(R.id.add_event_btn)).check(matches(isDisplayed()));
         onView(withId(R.id.add_event_btn)).perform(click());
         onView(withId(R.id.btn_save_event)).check(matches(isDisplayed()));
@@ -77,7 +77,7 @@ public class EspressoTest {
                 withParent(withResourceName("action_bar"))))
                 .check(matches(withText("Create an event")));
     }
-                     
+
     @Test
     public void checkIfDataInResViewIsEventAdapter() {
         onData(is(instanceOf(EventAdapter.class)));
@@ -88,11 +88,9 @@ public class EspressoTest {
         onData(allOf(is(instanceOf(Event.class))));
     }
 
-    /**
-     * this test should fail
-     */
+
     @Test
-    public void ShouldFailCheckTextInListItemIsVisible() {
+    public void CheckTextInListItemIsVisible() {
         onView(withId(R.id.event_title )).check(matches(isDisplayed()));
     }
 

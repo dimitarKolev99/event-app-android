@@ -22,9 +22,9 @@ public class SaveEventHelperImpl implements SaveEventHelper{
 
     int flag = 0;
 
-    public Event saveEvent(Bitmap bitmap, EditText editTextTitle, EditText editTextDescription,
-                           EditText date_picker, EditText time_picker, EditText event_location,
-                           Context context, SharedPreferences prefs) {
+    public Event saveEditEvent(Bitmap bitmap, EditText editTextTitle, EditText editTextDescription,
+                               EditText date_picker, EditText time_picker, EditText event_location,
+                               Context context, SharedPreferences prefs) {
         String title = editTextTitle.getText().toString();
         String description = editTextDescription.getText().toString();
         String date = date_picker.getText().toString();
@@ -57,7 +57,7 @@ public class SaveEventHelperImpl implements SaveEventHelper{
 
     }
 
-    public Event saveEventEdit(Bitmap bitmap, EditText editTextTitle, EditText editTextDescription,
+    public Event editEvent(Bitmap bitmap, EditText editTextTitle, EditText editTextDescription,
                            EditText date_picker, EditText time_picker, EditText event_location,
                            Context context, SharedPreferences prefs, int id) {
         String title = editTextTitle.getText().toString();
