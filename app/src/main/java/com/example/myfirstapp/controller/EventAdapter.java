@@ -116,12 +116,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
         Log.d(TAG, "Element " + position + " set.");
         holder.getTextView().setText(currentEvent.getTitle());
-        holder.getDescrView().setText(currentEvent.getDescription());
-        holder.getDateView().setText(currentEvent.getDate());
-        holder.getTimeView().setText(currentEvent.getTime());
 
-        loadImageFromStorage(currentEvent.getImageUri(), currentEvent.getImgName(), holder.getImage());
-//        holder.getImage().setImageBitmap(bitmap);
     }
 
     private void loadImageFromStorage(String path, String imgName, ImageView imageView)

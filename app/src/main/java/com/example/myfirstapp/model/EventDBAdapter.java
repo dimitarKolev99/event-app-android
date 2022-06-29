@@ -57,17 +57,7 @@ public class EventDBAdapter {
 
     private static final String[] event_table_columns = new String[]{
             COLUMN_EVENT_ID,
-            COLUMN_ORGANIZER_ID,
-            COLUMN_TITLE,
-            COLUMN_DESCRIPTION,
-//            COLUMN_IMAGE,
-//            COLUMN_IMAGE_NAME,
-            COLUMN_INTERESTED_COUNT,
-            COLUMN_LOCATION,
-            COLUMN_DATE,
-            COLUMN_TIME,
-            COLUMN_CREATED_AT,
-            COLUMN_UPDATED_AT
+            COLUMN_TITLE
     };
 
     private static final String[] user_table_columns = new String[]{
@@ -124,17 +114,7 @@ public class EventDBAdapter {
     private static final String CREATE_EVENT_TABLE = "CREATE TABLE " + EVENT_TABLE +
             "(" +
             COLUMN_EVENT_ID + " INTEGER PRIMARY KEY, " +
-            COLUMN_TITLE + " TEXT NOT NULL, " +
-            COLUMN_ORGANIZER_ID + " INTEGER NOT NULL, " +
-            COLUMN_DESCRIPTION + " TEXT NOT NULL, " +
-            COLUMN_IMAGE + " TEXT, " +
-            COLUMN_IMAGE_NAME + " TEXT, " +
-            COLUMN_INTERESTED_COUNT + " INTEGER DEFAULT 0, " +
-            COLUMN_LOCATION + " TEXT NOT NULL, " +
-            COLUMN_DATE + " TEXT, " +
-            COLUMN_TIME + " TEXT, " +
-            COLUMN_CREATED_AT + " TEXT DEFAULT CURRENT_TIMESTAMP, " +
-            COLUMN_UPDATED_AT + " TEXT DEFAULT CURRENT_TIMESTAMP" +
+            COLUMN_TITLE + " TEXT NOT NULL " +
             ");";
     /*
     private static final String CREATE_USER_TABLE = "CREATE TABLE " + USER_TABLE +
@@ -194,51 +174,16 @@ public class EventDBAdapter {
             contentValues.put(COLUMN_TITLE, event.getTitle());
         }
 
-        if (event.getDescription() != null) {
-            contentValues.put(COLUMN_DESCRIPTION, event.getDescription());
-        }
-
-        if (event.getImageUri() != null) {
-            contentValues.put(COLUMN_IMAGE, event.getImageUri());
-        }
-
-        if (event.getImgName() != null) {
-            contentValues.put(COLUMN_IMAGE_NAME, event.getImgName());
-        }
-
-
-        contentValues.put(COLUMN_INTERESTED_COUNT, event.getInterested_count());
-
-        if (event.getLocation() != null) {
-            contentValues.put(COLUMN_LOCATION, event.getLocation());
-        }
-
-        if (event.getDate() != null) {
-            contentValues.put(COLUMN_DATE, event.getDate());
-        }
-
-        if (event.getTime() != null) {
-            contentValues.put(COLUMN_TIME, event.getTime());
-        }
-
-        if (event.getCreated_at() != null) {
-            contentValues.put(COLUMN_CREATED_AT, event.getCreated_at());
-        }
-
-        if (event.getUpdated_at() != null) {
-            contentValues.put(COLUMN_UPDATED_AT, event.getUpdated_at());
-        }
-
-        contentValues.put(COLUMN_EVENT_ID, event.getId());
-        contentValues.put(COLUMN_ORGANIZER_ID, prefs.getInt(String.valueOf(R.string.pref_user_id), 0));
-
         return contentValues;
     }
 
+    /*
     public boolean update(Event event) {
         return sqLiteDatabase.update(EVENT_TABLE, loadContentValues(event), COLUMN_EVENT_ID + " = " + event.getId()
                 , null) > 0;
     }
+
+     */
 
     public List<Event> getAllEvents() {
         List<Event> events = new ArrayList<Event>();
@@ -246,45 +191,10 @@ public class EventDBAdapter {
         Cursor cursor = sqLiteDatabase.query(EVENT_TABLE, event_table_columns, null, null, null,
                 null, null);
 
-        if (cursor != null && cursor.getCount() > 0 && cursor.getString(4) != null
-        && cursor.getString(5) != null) {
-            while (cursor.moveToNext()) {
-                Event event = new Event(
-                        cursor.getInt(0),
-                        cursor.getInt(1),
-                        cursor.getString(2),
-                        cursor.getString(3),
-                        cursor.getString(4),
-                        cursor.getString(5),
-                        cursor.getInt(6),
-                        cursor.getString(7),
-                        cursor.getString(8),
-                        cursor.getString(9),
-                        cursor.getString(10),
-                        cursor.getString(11)
-                );
-
-                events.add(event);
-            }
-            cursor.close();
-        }
-
-
-
-        Log.d(TAG, cursor.getString(6));
         if (cursor != null && cursor.getCount() > 0) {
             while (cursor.moveToNext()) {
                 Event event = new Event(
-                        cursor.getInt(0),
-                        cursor.getInt(1),
-                        cursor.getString(2),
-                        cursor.getString(3),
-                        cursor.getInt(4),
-                        cursor.getString(5),
-                        cursor.getString(6),
-                        cursor.getString(7),
-                        cursor.getString(8),
-                        cursor.getString(9)
+                        cursor.getString(1)
                 );
 
                 events.add(event);
@@ -295,6 +205,7 @@ public class EventDBAdapter {
         return events;
     }
 
+    /*
     public List<Event> getUserEvents(String id) {
         List<Event> events = new ArrayList<Event>();
 
@@ -308,17 +219,7 @@ public class EventDBAdapter {
             while (cursor.moveToNext()) {
                 Event event = new Event(
                         cursor.getInt(0),
-                        cursor.getInt(1),
-                        cursor.getString(2),
-                        cursor.getString(3),
-                        cursor.getString(4),
-                        cursor.getString(5),
-                        cursor.getInt(6),
-                        cursor.getString(7),
-                        cursor.getString(8),
-                        cursor.getString(9),
-                        cursor.getString(10),
-                        cursor.getString(11)
+                        cursor.getString(2)
                 );
 
                 events.add(event);
@@ -329,10 +230,13 @@ public class EventDBAdapter {
         return events;
     }
 
+
     public boolean delete(Event event) {
 
         return sqLiteDatabase.delete(EVENT_TABLE, COLUMN_EVENT_ID + " = " + event.getId(), null) > 0;
     }
+
+     */
 
     public static class EventDBHelper extends SQLiteOpenHelper {
 

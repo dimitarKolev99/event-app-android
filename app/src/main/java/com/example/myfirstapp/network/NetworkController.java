@@ -42,7 +42,7 @@ public class NetworkController implements Callback<List<Event>> {
         if (response.isSuccessful()) {
             List<Event> eventList = response.body();
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && eventList != null) {
-                eventList.forEach(event -> Log.d(TAG, String.valueOf(event.getId())));
+                eventList.forEach(event -> Log.d(TAG, String.valueOf(event.getTitle())));
             }
         } else {
             Log.d(TAG, String.valueOf(response.errorBody()));

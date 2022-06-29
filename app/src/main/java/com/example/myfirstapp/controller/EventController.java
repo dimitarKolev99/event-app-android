@@ -32,10 +32,4 @@ public interface EventController {
      */
     void onEditButtonClicked(Event event);
 
-    /**
-     * get the events from the user
-     * @param id the id of the user
-     * @return list of events from the user
-     */
-    List<Event> getUserEvents(int id);
 }

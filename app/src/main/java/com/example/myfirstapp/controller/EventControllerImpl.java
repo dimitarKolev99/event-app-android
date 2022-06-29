@@ -24,10 +24,6 @@ public class EventControllerImpl implements EventController{
         return list;
     }
 
-    public List<Event> getUserEvents(int id) {
-        return eventModel.getUserEvents(id);
-    }
-
     public List<Event> onViewLoaded() {
         try {
             list = eventModel.getAllEvents();
@@ -44,8 +40,11 @@ public class EventControllerImpl implements EventController{
         //new InsertEventAsyncTask(eventModel).execute(event);
         boolean success = false;
         try {
-
+            if (eventModel == null) {
+                Log.d("EVENT_CONTROLLER", "NULL");
+            }
             success = eventModel.addEvent(event);
+
             if (success) {
                 list = eventModel.getAllEvents();
             }
@@ -85,7 +84,7 @@ public class EventControllerImpl implements EventController{
 
     public void showErrorToast(String errorMessage) {
 //        Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show();
-        Log.d("EVENT_CONTROLLER", "ERROR in CONTROLLER");
+        Log.d("EVENT_CONTROLLER", errorMessage);
     }
 
     /*

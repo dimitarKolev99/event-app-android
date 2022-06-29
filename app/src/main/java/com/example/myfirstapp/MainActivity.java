@@ -25,8 +25,10 @@ import android.widget.Toast;
 import com.example.myfirstapp.controller.EventAdapter;
 import com.example.myfirstapp.controller.EventControllerImpl;
 import com.example.myfirstapp.controller.OnItemClickListener;
+import com.example.myfirstapp.model.DBHelper;
 import com.example.myfirstapp.model.Event;
 import com.example.myfirstapp.model.EventModel;
+import com.example.myfirstapp.model.EventModelImpl;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -38,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
     Handler mHandler = new Handler();
 
-    EventControllerImpl eventControllerImpl;
+    private EventControllerImpl eventControllerImpl;
 
     private EventModel eventModel;
 
@@ -65,10 +67,10 @@ public class MainActivity extends AppCompatActivity {
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-//        eventModel = new EventModelImpl(MyApplication.getEventDBAdapter());
-//        eventController = new EventController(eventModel, this);
+        eventModel = new EventModelImpl(new DBHelper(this));
+        eventControllerImpl = new EventControllerImpl(eventModel, this);
         setViews();
-//        new GetEventAsyncTask(eventController).execute();
+        new GetEventAsyncTask(eventControllerImpl).execute();
 
         /*
         new Thread(new Runnable() {
@@ -137,14 +139,7 @@ public class MainActivity extends AppCompatActivity {
             public void onEventClick(Event event) {
                 Intent intent = new Intent(MainActivity.this, AddEditEventActivity.class);
                 intent.putExtra(REQUEST_CODE, EDIT_EVENT_REQUEST);
-                intent.putExtra(AddEditEventActivity.EXTRA_ID, event.getId());
                 intent.putExtra(AddEditEventActivity.EXTRA_TITLE, event.getTitle());
-                intent.putExtra(AddEditEventActivity.EXTRA_DESCRIPTION, event.getDescription());
-                intent.putExtra(AddEditEventActivity.EXTRA_DATE, event.getDate());
-                intent.putExtra(AddEditEventActivity.EXTRA_TIME, event.getTime());
-                intent.putExtra(AddEditEventActivity.EXTRA_LOCATION, event.getLocation());
-                intent.putExtra(AddEditEventActivity.EXTRA_IMAGE_NAME, event.getImgName());
-                intent.putExtra(AddEditEventActivity.EXTRA_IMAGE_URI, event.getImageUri());
 
                 openActivityForResult(intent);
 
@@ -158,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void updateResView(List<Event> eventList) {
-//        eventAdapter.updateEventsListItems(eventList);
+        eventAdapter.updateEventsListItems(eventList);
     }
 
     private void setItemTouchHelper() {
@@ -280,6 +275,10 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(List<Event> events) {
             super.onPostExecute(events);
+
+            if (events != null) {
+                Toast.makeText(MainActivity.this, "Post Exec", Toast.LENGTH_SHORT).show();
+            }
 
             if (events != null) {
                 eventList = events;

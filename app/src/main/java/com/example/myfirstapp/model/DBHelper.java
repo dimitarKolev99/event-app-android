@@ -54,34 +54,13 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String COLUMN_EVENT_USERS_USER_ID = "user_id";
 
     private static final String[] event_table_columns = new String[]{
-            COLUMN_EVENT_ID,
-            COLUMN_ORGANIZER_ID,
-            COLUMN_TITLE,
-            COLUMN_DESCRIPTION,
-//            COLUMN_IMAGE,
-//            COLUMN_IMAGE_NAME,
-            COLUMN_INTERESTED_COUNT,
-            COLUMN_LOCATION,
-            COLUMN_DATE,
-            COLUMN_TIME,
-            COLUMN_CREATED_AT,
-            COLUMN_UPDATED_AT
+            COLUMN_TITLE
     };
 
     private static final String CREATE_EVENT_TABLE = "CREATE TABLE " + EVENT_TABLE +
             "(" +
                 COLUMN_EVENT_ID + " INTEGER PRIMARY KEY, " +
-                COLUMN_ORGANIZER_ID + " INTEGER NOT NULL, " +
-                COLUMN_TITLE + " TEXT NOT NULL, " +
-                COLUMN_DESCRIPTION + " TEXT NOT NULL, " +
-                COLUMN_IMAGE + " TEXT, " +
-                COLUMN_IMAGE_NAME + " TEXT, " +
-                COLUMN_INTERESTED_COUNT + " INTEGER DEFAULT 0, " +
-                COLUMN_LOCATION + " TEXT NOT NULL, " +
-                COLUMN_DATE + " TEXT, " +
-                COLUMN_TIME + " TEXT, " +
-                COLUMN_CREATED_AT + " TEXT DEFAULT CURRENT_TIMESTAMP, " +
-                COLUMN_UPDATED_AT + " TEXT DEFAULT CURRENT_TIMESTAMP" +
+                COLUMN_TITLE + " TEXT NOT NULL " +
             ");";
 
     SQLiteDatabase sqLiteDatabase;
@@ -124,23 +103,15 @@ public class DBHelper extends SQLiteOpenHelper {
     private ContentValues loadContentValues(Event event) {
         ContentValues contentValues = new ContentValues();
 
-        contentValues.put(COLUMN_EVENT_ID, event.getId());
-        contentValues.put(COLUMN_ORGANIZER_ID, event.getOrganizer_id());
         contentValues.put(COLUMN_TITLE, event.getTitle());
-        contentValues.put(COLUMN_DESCRIPTION, event.getDescription());
-        contentValues.put(COLUMN_INTERESTED_COUNT, event.getInterested_count());
-        contentValues.put(COLUMN_LOCATION, event.getLocation());
-        contentValues.put(COLUMN_DATE, event.getDate());
-        contentValues.put(COLUMN_TIME, event.getTime());
-        contentValues.put(COLUMN_CREATED_AT, event.getCreated_at());
-        contentValues.put(COLUMN_UPDATED_AT, event.getUpdated_at());
 
         return contentValues;
     }
 
+
     public boolean update(Event event) {
         sqLiteDatabase = this.getWritableDatabase();
-        return sqLiteDatabase.update(EVENT_TABLE, loadContentValues(event), COLUMN_EVENT_ID + " = " + event.getId()
+        return sqLiteDatabase.update(EVENT_TABLE, loadContentValues(event), COLUMN_EVENT_ID + " = " + event.getTitle()
                 , null) > 0;
     }
 
@@ -154,16 +125,7 @@ public class DBHelper extends SQLiteOpenHelper {
         if (cursor != null && cursor.getCount() > 0) {
             while (cursor.moveToNext()) {
                 Event event = new Event(
-                        cursor.getInt(0),
-                        cursor.getInt(1),
-                        cursor.getString(2),
-                        cursor.getString(3),
-                        cursor.getInt(4),
-                        cursor.getString(5),
-                        cursor.getString(6),
-                        cursor.getString(7),
-                        cursor.getString(8),
-                        cursor.getString(9)
+                        cursor.getString(0)
                 );
 
                 events.add(event);
@@ -174,6 +136,7 @@ public class DBHelper extends SQLiteOpenHelper {
         return events;
     }
 
+    /*
     public List<Event> getUserEvents(String id) {
         sqLiteDatabase = this.getReadableDatabase();
         List<Event> events = new ArrayList<Event>();
@@ -187,18 +150,7 @@ public class DBHelper extends SQLiteOpenHelper {
         if (cursor != null && cursor.getCount() > 0) {
             while (cursor.moveToNext()) {
                 Event event = new Event(
-                        cursor.getInt(0),
-                        cursor.getInt(1),
-                        cursor.getString(2),
-                        cursor.getString(3),
-                        cursor.getString(4),
-                        cursor.getString(5),
-                        cursor.getInt(6),
-                        cursor.getString(7),
-                        cursor.getString(8),
-                        cursor.getString(9),
-                        cursor.getString(10),
-                        cursor.getString(11)
+                        cursor.getString(2)
                 );
 
                 events.add(event);
@@ -209,9 +161,12 @@ public class DBHelper extends SQLiteOpenHelper {
         return events;
     }
 
+     */
+
+
     public boolean delete(Event event) {
         sqLiteDatabase = this.getWritableDatabase();
-        return sqLiteDatabase.delete(EVENT_TABLE, COLUMN_EVENT_ID + " = " + event.getId(), null) > 0;
+        return sqLiteDatabase.delete(EVENT_TABLE, COLUMN_EVENT_ID + " = " + event.getTitle(), null) > 0;
     }
 
     public void deleteAllEvents() {

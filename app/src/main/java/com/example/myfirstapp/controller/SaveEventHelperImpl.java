@@ -22,38 +22,10 @@ public class SaveEventHelperImpl implements SaveEventHelper{
 
     int flag = 0;
 
-    public Event saveEditEvent(Bitmap bitmap, EditText editTextTitle, EditText editTextDescription,
-                               EditText date_picker, EditText time_picker, EditText event_location,
-                               Context context, SharedPreferences prefs) {
+    public Event saveEditEvent(EditText editTextTitle) {
         String title = editTextTitle.getText().toString();
-        String description = editTextDescription.getText().toString();
-        String date = date_picker.getText().toString();
 
-        String time = time_picker.getText().toString();
-        String location = event_location.getText().toString();
-
-        if (title.trim().isEmpty() || description.trim().isEmpty() ||
-                date.trim().isEmpty() || time.trim().isEmpty() || location.trim().isEmpty()) {
-            Toast.makeText(context, "Please insert all necessary information", Toast.LENGTH_SHORT).show();
-            flag = -1;
-        }
-
-        Random random = new Random();
-        int rand_id = random.nextInt();
-
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
-        Date datee = new Date(System.currentTimeMillis());
-
-        String imgName = "img" + String.valueOf(rand_id) + ".jpg";
-
-        String path =
-                internalStorageHelper.saveToInternalStorage(bitmap, rand_id, context);
-        //I/O OPERATION -> SLOW
-
-        return new Event(rand_id,  prefs.getInt(String.valueOf(R.string.pref_user_id), 0),
-                title, description, path, imgName,
-                0, location, date, time, formatter.format(datee),
-                formatter.format(datee));
+        return new Event(title);
 
     }
 
@@ -85,10 +57,7 @@ public class SaveEventHelperImpl implements SaveEventHelper{
                 internalStorageHelper.saveToInternalStorage(bitmap, rand_id, context);
         //I/O OPERATION -> SLOW
 
-        return new Event(id,  prefs.getInt(String.valueOf(R.string.pref_user_id), 0),
-                title, description, path, imgName,
-                0, location, date, time, formatter.format(datee),
-                formatter.format(datee));
+        return new Event(title);
 
     }
 

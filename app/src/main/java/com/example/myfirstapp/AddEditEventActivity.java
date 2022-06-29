@@ -27,13 +27,16 @@ import android.widget.ImageView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.example.myfirstapp.controller.EventController;
 import com.example.myfirstapp.controller.EventControllerImpl;
 import com.example.myfirstapp.controller.SaveEventHelper;
 import com.example.myfirstapp.controller.SaveEventHelperImpl;
 import com.example.myfirstapp.internal_storage_helper.InternalStorageHelper;
 import com.example.myfirstapp.internal_storage_helper.InternalStorageHelperImpl;
+import com.example.myfirstapp.model.DBHelper;
 import com.example.myfirstapp.model.Event;
 import com.example.myfirstapp.model.EventModel;
+import com.example.myfirstapp.model.EventModelImpl;
 import com.example.myfirstapp.utils.BitmapToByteArrayHelper;
 
 import java.io.FileNotFoundException;
@@ -41,6 +44,7 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.Random;
 
 public class AddEditEventActivity extends AppCompatActivity {
     public static final String EXTRA_ID =
@@ -72,7 +76,7 @@ public class AddEditEventActivity extends AppCompatActivity {
     private BitmapToByteArrayHelper bitmapToByteArrayHelper;
     private Uri urii;
     private Button btn_save_event;
-    private EventControllerImpl eventControllerImpl;
+    private EventController eventController;
     private EventModel eventModel;
     SharedPreferences prefs;
     InternalStorageHelper internalStorageHelper;
@@ -109,8 +113,8 @@ public class AddEditEventActivity extends AppCompatActivity {
             }
         };
 
-//        eventModel = new EventModelImpl(MyApplication.getEventDBAdapter());
-//        eventController = new EventController(eventModel, this);
+        eventModel = new EventModelImpl(new DBHelper(this));
+        eventController = new EventControllerImpl(eventModel, this);
 
         internalStorageHelper = new InternalStorageHelperImpl();
         saveEventHelper = new SaveEventHelperImpl();
@@ -118,9 +122,8 @@ public class AddEditEventActivity extends AppCompatActivity {
         btn_save_event.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (bitmap != null && REQUEST_CODE == MainActivity.ADD_EVENT_REQUEST) {
-                    Event event = saveEventHelper.saveEditEvent(bitmap, editTextTitle, editTextDescription, date_picker,
-                            time_picker, event_location, AddEditEventActivity.this, prefs);
+                if (REQUEST_CODE == MainActivity.ADD_EVENT_REQUEST) {
+                    Event event = saveEventHelper.saveEditEvent(editTextTitle);
                     setResForParAct(event);
                     //                    saveEvent(bitmap);
                 } else if (bitmap != null && REQUEST_CODE == MainActivity.EDIT_EVENT_REQUEST) {
@@ -237,7 +240,8 @@ public class AddEditEventActivity extends AppCompatActivity {
         if (id != -1) {
 //            eventController.onEditButtonClicked(event);
         } else {
-//            eventController.onAddButtonClicked(event);
+            boolean success = eventController.onAddButtonClicked(event);
+            Toast.makeText(this, String.valueOf(success), Toast.LENGTH_SHORT).show();
         }
         mHandler.post(new Runnable() {
             @Override
@@ -258,8 +262,7 @@ public class AddEditEventActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.save_event:
-                Event event = saveEventHelper.saveEditEvent(bitmap, editTextTitle, editTextDescription, date_picker,
-                        time_picker, event_location, AddEditEventActivity.this, prefs);
+                Event event = saveEventHelper.saveEditEvent(editTextTitle);
                 setResForParAct(event);
                 return true;
             default:

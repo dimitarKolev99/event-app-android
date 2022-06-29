@@ -54,8 +54,11 @@ public class EventModelImpl implements EventModel{
         return null;
     }
 
+    /*
     @Override
     public List<Event> getUserEvents(int id) {
         return this.dbHelper.getUserEvents(String.valueOf(id));
     }
+
+     */
 }

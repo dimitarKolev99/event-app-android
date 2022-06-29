@@ -35,10 +35,5 @@ public interface EventModel {
      */
     public List<Event> getAllEvents();
 
-    /**
-     * get events of the user
-     * @param id the user id
-     * @return
-     */
-    public List<Event> getUserEvents(int id);
+
 }

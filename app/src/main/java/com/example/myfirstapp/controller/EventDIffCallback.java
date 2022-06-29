@@ -28,7 +28,7 @@ public class EventDIffCallback extends DiffUtil.Callback {
 
     @Override
     public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-        return mOldEventsList.get(oldItemPosition).getId() == mNewEventsList.get(newItemPosition).getId();
+        return mOldEventsList.get(oldItemPosition).getTitle() == mNewEventsList.get(newItemPosition).getTitle();
     }
 
     @Override
