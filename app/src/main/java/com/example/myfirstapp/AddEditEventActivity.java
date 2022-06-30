@@ -8,14 +8,17 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -79,6 +82,10 @@ public class AddEditEventActivity extends AppCompatActivity {
     private EventController eventController;
     private EventModel eventModel;
     SharedPreferences prefs;
+
+    private String title;
+    private int id;
+
     InternalStorageHelper internalStorageHelper;
     SaveEventHelper saveEventHelper;
 
@@ -117,20 +124,29 @@ public class AddEditEventActivity extends AppCompatActivity {
         eventController = new EventControllerImpl(eventModel, this);
 
         internalStorageHelper = new InternalStorageHelperImpl();
-        saveEventHelper = new SaveEventHelperImpl();
+        saveEventHelper = new SaveEventHelperImpl(eventModel, eventController);
 
         btn_save_event.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (REQUEST_CODE == MainActivity.ADD_EVENT_REQUEST) {
-                    Event event = saveEventHelper.saveEditEvent(editTextTitle);
-                    setResForParAct(event);
+                if (bitmap != null && REQUEST_CODE == MainActivity.ADD_EVENT_REQUEST) {
+//                    saveEventHelper.saveEditEvent(editTextTitle,  bitmap, AddEditEventActivity.this);
+
+                    String titleField = editTextTitle.getText().toString();
+                    title = titleField;
+                    int id1 = new Random().nextInt();
+
+                    id = id1;
+
+                    new LoadImgAsyncTask(bitmap, id, AddEditEventActivity.this).execute();
+
+//                    setResForParAct();
                     //                    saveEvent(bitmap);
                 } else if (bitmap != null && REQUEST_CODE == MainActivity.EDIT_EVENT_REQUEST) {
                     Event event = saveEventHelper.editEvent(bitmap, editTextTitle, editTextDescription, date_picker,
                             time_picker, event_location, AddEditEventActivity.this, prefs,
                             getIntent().getIntExtra(EXTRA_ID, -1));
-                    setResForParAct(event);
+                    setResForParAct();
                 } else {
                     Toast.makeText(AddEditEventActivity.this, "Please " +
                             "choose an image before continuing.", Toast.LENGTH_SHORT).show();
@@ -220,7 +236,7 @@ public class AddEditEventActivity extends AppCompatActivity {
             });
 
 
-    private void setResForParAct(Event event) {
+    private void setResForParAct() {
 
         Intent data = new Intent();
 
@@ -231,22 +247,25 @@ public class AddEditEventActivity extends AppCompatActivity {
             data.putExtra(EXTRA_ID, id);
         }
 
-        doCall(event, id);
+//        doCall();
         setResult(RESULT_OK, data);
-
+        finish();
     }
 
-    private void doCall(Event event, int id) {
+    private void doCall() {
+        /*
         if (id != -1) {
 //            eventController.onEditButtonClicked(event);
         } else {
             boolean success = eventController.onAddButtonClicked(event);
             Toast.makeText(this, String.valueOf(success), Toast.LENGTH_SHORT).show();
         }
+
+         */
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                finish();
+//                finish();
             }
         });
     }
@@ -262,8 +281,8 @@ public class AddEditEventActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.save_event:
-                Event event = saveEventHelper.saveEditEvent(editTextTitle);
-                setResForParAct(event);
+//                Event event = saveEventHelper.saveEditEvent(editTextTitle);
+//                setResForParAct(event);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -293,4 +312,33 @@ public class AddEditEventActivity extends AppCompatActivity {
         super.onStart();
         Toast.makeText(this, "Started Add", Toast.LENGTH_SHORT).show();
     }
+
+    private class LoadImgAsyncTask extends AsyncTask<Void, Void, String> {
+        private Bitmap bitmap;
+        private int rand_id;
+        private Context context;
+
+        private LoadImgAsyncTask(Bitmap bitmap, int rand_id, Context context) {
+            this.bitmap = bitmap;
+            this.rand_id = rand_id;
+            this.context = context;
+        }
+
+        @Override
+        protected String doInBackground(Void... voids) {
+            return internalStorageHelper.saveToInternalStorage(bitmap, rand_id, context);
+        }
+
+        @Override
+        protected void onPostExecute(String path) {
+            super.onPostExecute(path);
+
+            if (path != null) {
+                Log.d("LoggerPath", path);
+                eventController.onAddButtonClicked(new Event(title, path, String.valueOf(id)));
+                setResForParAct();
+            }
+        }
+    }
+
 }

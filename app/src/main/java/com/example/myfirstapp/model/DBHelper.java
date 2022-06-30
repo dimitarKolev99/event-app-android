@@ -54,13 +54,17 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String COLUMN_EVENT_USERS_USER_ID = "user_id";
 
     private static final String[] event_table_columns = new String[]{
-            COLUMN_TITLE
+            COLUMN_TITLE,
+            COLUMN_IMAGE,
+            COLUMN_IMAGE_NAME
     };
 
     private static final String CREATE_EVENT_TABLE = "CREATE TABLE " + EVENT_TABLE +
             "(" +
                 COLUMN_EVENT_ID + " INTEGER PRIMARY KEY, " +
-                COLUMN_TITLE + " TEXT NOT NULL " +
+                COLUMN_TITLE + " TEXT NOT NULL, " +
+                COLUMN_IMAGE + " TEXT," +
+                COLUMN_IMAGE_NAME + " TEXT " +
             ");";
 
     SQLiteDatabase sqLiteDatabase;
@@ -105,6 +109,14 @@ public class DBHelper extends SQLiteOpenHelper {
 
         contentValues.put(COLUMN_TITLE, event.getTitle());
 
+        if (event.getImagePath() != null) {
+            contentValues.put(COLUMN_IMAGE, event.getImagePath());
+        }
+
+        if (event.getImageName() != null) {
+            contentValues.put(COLUMN_IMAGE_NAME, event.getImageName());
+        }
+
         return contentValues;
     }
 
@@ -125,7 +137,9 @@ public class DBHelper extends SQLiteOpenHelper {
         if (cursor != null && cursor.getCount() > 0) {
             while (cursor.moveToNext()) {
                 Event event = new Event(
-                        cursor.getString(0)
+                        cursor.getString(0),
+                        cursor.getString(1),
+                        cursor.getString(2)
                 );
 
                 events.add(event);

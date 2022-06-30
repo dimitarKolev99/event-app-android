@@ -25,11 +25,11 @@ public class InternalStorageHelperImpl implements InternalStorageHelper{
         File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
         // Create imageDir
         String name = "img" + String.valueOf(id) + ".jpg";
-        File mypath = new File(directory, name);
+        File myPath = new File(directory, name);
 
         FileOutputStream fos = null;
         try {
-            fos = new FileOutputStream(mypath);
+            fos = new FileOutputStream(myPath);
             // Use the compress method on the BitMap object to write image to the OutputStream
             bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
         } catch (Exception e) {

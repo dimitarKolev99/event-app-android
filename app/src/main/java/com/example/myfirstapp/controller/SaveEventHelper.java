@@ -14,7 +14,7 @@ public interface SaveEventHelper {
      * @param editTextTitle
      * @return the Event object
      */
-    Event saveEditEvent(EditText editTextTitle);
+    Event saveEditEvent(EditText editTextTitle, Bitmap bitmap, Context context);
 
 
     /**

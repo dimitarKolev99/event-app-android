@@ -1,6 +1,7 @@
 package com.example.myfirstapp.controller;
 
 import android.content.Context;
+import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +11,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -114,17 +116,32 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
         Event currentEvent = getEventAt(position);
 
-        Log.d(TAG, "Element " + position + " set.");
         holder.getTextView().setText(currentEvent.getTitle());
+
+
+        /*
+        Log.d("image path", currentEvent.getImagePath());
+        Log.d("image name", currentEvent.getImageName());
+
+         */
+
+        loadImageFromStorage(currentEvent.getImagePath(), currentEvent.getImageName(), holder.getImage());
+
 
     }
 
     private void loadImageFromStorage(String path, String imgName, ImageView imageView)
     {
-        File f = new File(path, imgName);
+        /*
+        String path1 = "https://picsum.photos/id/237/200/300";
+        Log.d("picasso", path+"/img"+imgName+".jpg");
+
+
+         */
+        File f = new File(path+"/img"+imgName+".jpg");
         Picasso.with(context).load(f).fit().centerCrop()
-                .placeholder(R.drawable.ic_placeholder)
-                .error(R.drawable.ic_close)
+                .placeholder(AppCompatResources.getDrawable(context, R.drawable.ic_event_icon))
+                .error(AppCompatResources.getDrawable(context, R.drawable.ic_close))
                 .into(imageView);
     }
 
