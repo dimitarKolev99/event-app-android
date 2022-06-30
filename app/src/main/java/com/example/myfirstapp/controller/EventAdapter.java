@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -56,6 +57,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         private final TextView dateView;
         private final TextView timeView;
         private final ImageView image;
+        private Button favBtn;
 
 
         public EventViewHolder(@NonNull View itemView, OnItemClickListener listener) {
@@ -77,7 +79,16 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             dateView = itemView.findViewById(R.id.event_date);
             timeView = itemView.findViewById(R.id.event_time);
             image = itemView.findViewById(R.id.imageView);
+            favBtn = itemView.findViewById(R.id.favBtn);
 
+            favBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int position = getAdapterPosition();
+                    Event currentEvent = getEventAt(position);
+                    favBtn.setBackgroundResource(R.drawable.ic_baseline_favorite_24);
+                }
+            });
         }
 
         public TextView getTextView() {
