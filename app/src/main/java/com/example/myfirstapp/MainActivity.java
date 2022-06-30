@@ -11,12 +11,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -65,7 +67,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPreferences = this.getSharedPreferences("prefs", Context.MODE_PRIVATE);
+
+        Log.d("Logging User ID", String.valueOf(sharedPreferences.getInt("UserID", 0)));
 
         eventModel = new EventModelImpl(new DBHelper(this));
         eventControllerImpl = new EventControllerImpl(eventModel, this);
@@ -133,7 +137,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void setViews() {
 
-        eventAdapter = new EventAdapter(new ArrayList<Event>(), MainActivity.this);
+        eventAdapter = new EventAdapter(new ArrayList<Event>(), MainActivity.this, eventControllerImpl);
         eventAdapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onEventClick(Event event) {

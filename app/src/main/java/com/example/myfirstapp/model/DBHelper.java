@@ -6,11 +6,6 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.preference.PreferenceManager;
-import android.util.Log;
-import android.widget.Toast;
-
-import com.example.myfirstapp.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +29,7 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String COLUMN_IMAGE = "event_image";
     private static final String COLUMN_IMAGE_NAME = "event_image_name";
     private static final String COLUMN_INTERESTED_COUNT = "event_interested_count";
+    public static final String COLUMN_FAVORITE_STATUS = "event_fav_status";
     private static final String COLUMN_LOCATION = "event_location";
     private static final String COLUMN_DATE = "event_date";
     private static final String COLUMN_TIME = "event_time";
@@ -54,17 +50,24 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String COLUMN_EVENT_USERS_USER_ID = "user_id";
 
     private static final String[] event_table_columns = new String[]{
+            COLUMN_EVENT_ID,
+            COLUMN_ORGANIZER_ID,
             COLUMN_TITLE,
             COLUMN_IMAGE,
-            COLUMN_IMAGE_NAME
+            COLUMN_IMAGE_NAME,
+            COLUMN_INTERESTED_COUNT,
+            COLUMN_FAVORITE_STATUS
     };
 
     private static final String CREATE_EVENT_TABLE = "CREATE TABLE " + EVENT_TABLE +
             "(" +
                 COLUMN_EVENT_ID + " INTEGER PRIMARY KEY, " +
+                COLUMN_ORGANIZER_ID + " INTEGER NOT NULL, " +
                 COLUMN_TITLE + " TEXT NOT NULL, " +
                 COLUMN_IMAGE + " TEXT," +
-                COLUMN_IMAGE_NAME + " TEXT " +
+                COLUMN_IMAGE_NAME + " TEXT, " +
+                COLUMN_INTERESTED_COUNT + " INTEGER DEFAULT 0, " +
+                COLUMN_FAVORITE_STATUS + " INTEGER DEFAULT 0 " +
             ");";
 
     SQLiteDatabase sqLiteDatabase;
@@ -73,7 +76,7 @@ public class DBHelper extends SQLiteOpenHelper {
         super(context, DB_NAME, null, DB_VERSION);
         this.context = context;
         sqLiteDatabase = this.getWritableDatabase();
-        prefs = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
+        prefs = context.getSharedPreferences("prefs", Context.MODE_PRIVATE);
     }
 
     @Override
@@ -107,6 +110,14 @@ public class DBHelper extends SQLiteOpenHelper {
     private ContentValues loadContentValues(Event event) {
         ContentValues contentValues = new ContentValues();
 
+        if (event.getEventID() != 0) {
+            contentValues.put(COLUMN_EVENT_ID, event.getEventID());
+        }
+
+        if (prefs.getInt("UserID", 0) != 0) {
+            contentValues.put(COLUMN_ORGANIZER_ID, prefs.getInt("UserID", 0));
+        }
+
         contentValues.put(COLUMN_TITLE, event.getTitle());
 
         if (event.getImagePath() != null) {
@@ -117,13 +128,17 @@ public class DBHelper extends SQLiteOpenHelper {
             contentValues.put(COLUMN_IMAGE_NAME, event.getImageName());
         }
 
+        contentValues.put(COLUMN_INTERESTED_COUNT, event.getInterestedCount());
+
+        contentValues.put(COLUMN_FAVORITE_STATUS, event.getFavStatus());
+
         return contentValues;
     }
 
 
     public boolean update(Event event) {
         sqLiteDatabase = this.getWritableDatabase();
-        return sqLiteDatabase.update(EVENT_TABLE, loadContentValues(event), COLUMN_EVENT_ID + " = " + event.getTitle()
+        return sqLiteDatabase.update(EVENT_TABLE, loadContentValues(event), COLUMN_EVENT_ID + " = " + event.getEventID()
                 , null) > 0;
     }
 
@@ -137,9 +152,13 @@ public class DBHelper extends SQLiteOpenHelper {
         if (cursor != null && cursor.getCount() > 0) {
             while (cursor.moveToNext()) {
                 Event event = new Event(
-                        cursor.getString(0),
-                        cursor.getString(1),
-                        cursor.getString(2)
+                        cursor.getInt(0),
+                        cursor.getInt(1),
+                        cursor.getString(2),
+                        cursor.getString(3),
+                        cursor.getString(4),
+                        cursor.getInt(5),
+                        cursor.getInt(6)
                 );
 
                 events.add(event);

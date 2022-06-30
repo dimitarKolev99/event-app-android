@@ -106,7 +106,7 @@ public class SaveEventHelperImpl implements SaveEventHelper{
             super.onPostExecute(path);
 
             if (path != null) {
-                eventController.onAddButtonClicked(new Event(title, path, String.valueOf(id)));
+//                eventController.onAddButtonClicked(new Event(title, path, String.valueOf(id)));
             }
         }
     }

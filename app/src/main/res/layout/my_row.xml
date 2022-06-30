@@ -81,6 +81,15 @@
                 android:background="@drawable/ic_baseline_favorite_border_24"
                 />
 
+            <TextView
+                android:id="@+id/interested_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="30dp"
+                android:layout_marginTop="16dp"
+                app:layout_constraintStart_toEndOf="@+id/favBtn"
+                app:layout_constraintTop_toTopOf="@+id/event_btn_favorite" />
+
             <Button
                 android:id="@+id/event_btn_favorite"
                 android:layout_width="wrap_content"

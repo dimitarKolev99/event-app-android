@@ -106,7 +106,7 @@ public class AddEditEventActivity extends AppCompatActivity {
         bitmapToByteArrayHelper = new BitmapToByteArrayHelper();
         btn_save_event = findViewById(R.id.btn_save_event);
 
-        prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        prefs = this.getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
         calendar = Calendar.getInstance();
         DatePickerDialog.OnDateSetListener date = new DatePickerDialog.OnDateSetListener() {
@@ -334,8 +334,16 @@ public class AddEditEventActivity extends AppCompatActivity {
             super.onPostExecute(path);
 
             if (path != null) {
-                Log.d("LoggerPath", path);
-                eventController.onAddButtonClicked(new Event(title, path, String.valueOf(id)));
+
+                eventController.onAddButtonClicked(new Event(
+                        new Random().nextInt(),
+                        prefs.getInt("UserID", 0),
+                        title,
+                        path,
+                        String.valueOf(id),
+                        0,
+                        0
+                        ));
                 setResForParAct();
             }
         }

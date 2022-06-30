@@ -1,10 +1,12 @@
 package com.example.myfirstapp;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -16,7 +18,7 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        SharedPreferences prefs = this.getSharedPreferences("prefs", Context.MODE_PRIVATE);
         boolean previouslyStarted = prefs.getBoolean(getString(R.string.pref_previously_started), false);
 
         if(!previouslyStarted) {
@@ -27,7 +29,9 @@ public class SplashActivity extends AppCompatActivity {
             Random random = new Random();
             int user_id = random.nextInt();
 
-            edit.putInt(getString(R.string.pref_user_id), user_id);
+            Log.d("ID", String.valueOf(user_id));
+
+            edit.putInt("UserID", user_id);
             edit.commit();
 
         }

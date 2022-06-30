@@ -1,7 +1,6 @@
 package com.example.myfirstapp.controller;
 
 import android.content.Context;
-import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,9 +32,12 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
     private Context context;
 
-    public EventAdapter(List<Event> eventList, Context context) {
+    EventController eventController;
+
+    public EventAdapter(List<Event> eventList, Context context, EventController eventController) {
         this.eventList.addAll(eventList);
         this.context = context;
+        this.eventController = eventController;
     }
 
     public void updateEventsListItems(List<Event> events) {
@@ -58,6 +60,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         private final TextView timeView;
         private final ImageView image;
         private Button favBtn;
+        private TextView interested_count_tv;
 
 
         public EventViewHolder(@NonNull View itemView, OnItemClickListener listener) {
@@ -80,13 +83,35 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             timeView = itemView.findViewById(R.id.event_time);
             image = itemView.findViewById(R.id.imageView);
             favBtn = itemView.findViewById(R.id.favBtn);
+            interested_count_tv = itemView.findViewById(R.id.interested_count);
 
             favBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     int position = getAdapterPosition();
                     Event currentEvent = getEventAt(position);
-                    favBtn.setBackgroundResource(R.drawable.ic_baseline_favorite_24);
+
+                    if (currentEvent.getFavStatus() == 0) {
+                        currentEvent.setFavStatus(1);
+                        currentEvent.setInterestedCount(currentEvent.getInterestedCount() + 1);
+                        getIntCountTV().setText(String.valueOf(currentEvent.getInterestedCount()));
+
+                        //onEditButtonClicked here
+                        eventController.onEditButtonClicked(currentEvent);
+                        favBtn.setBackgroundResource(R.drawable.ic_baseline_favorite_24);
+                        favBtn.setSelected(true);
+                    } else {
+                        currentEvent.setInterestedCount(currentEvent.getInterestedCount() - 1);
+
+                        getIntCountTV().setText(String.valueOf(currentEvent.getInterestedCount()));
+
+                        eventController.onEditButtonClicked(currentEvent);
+                        currentEvent.setFavStatus(0);
+
+                        //onEditButtonClicked here
+                        favBtn.setBackgroundResource(R.drawable.ic_baseline_favorite_border_24);
+                        favBtn.setSelected(false);
+                    }
                 }
             });
         }
@@ -110,6 +135,14 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         public ImageView getImage() {
             return image;
         }
+
+        public TextView getIntCountTV() {
+            return interested_count_tv;
+        }
+
+        public Button getFavBtn() {
+            return favBtn;
+        }
     }
 
 
@@ -129,6 +162,13 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
         holder.getTextView().setText(currentEvent.getTitle());
 
+        if (currentEvent.getFavStatus() == 0) {
+            holder.getFavBtn().setBackgroundResource(R.drawable.ic_baseline_favorite_border_24);
+        } else {
+            holder.getFavBtn().setBackgroundResource(R.drawable.ic_baseline_favorite_24);
+        }
+
+        holder.getIntCountTV().setText(String.valueOf(currentEvent.getInterestedCount()));
 
         /*
         Log.d("image path", currentEvent.getImagePath());
@@ -137,18 +177,10 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
          */
 
         loadImageFromStorage(currentEvent.getImagePath(), currentEvent.getImageName(), holder.getImage());
-
-
     }
 
     private void loadImageFromStorage(String path, String imgName, ImageView imageView)
     {
-        /*
-        String path1 = "https://picsum.photos/id/237/200/300";
-        Log.d("picasso", path+"/img"+imgName+".jpg");
-
-
-         */
         File f = new File(path+"/img"+imgName+".jpg");
         Picasso.with(context).load(f).fit().centerCrop()
                 .placeholder(AppCompatResources.getDrawable(context, R.drawable.ic_event_icon))
