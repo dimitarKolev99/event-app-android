@@ -17,7 +17,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -40,7 +39,9 @@ import com.example.myfirstapp.model.DBHelper;
 import com.example.myfirstapp.model.Event;
 import com.example.myfirstapp.model.EventModel;
 import com.example.myfirstapp.model.EventModelImpl;
+import com.example.myfirstapp.network.PostEventRequest;
 import com.example.myfirstapp.utils.BitmapToByteArrayHelper;
+import com.example.myfirstapp.utils.ImageEncoder;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -82,12 +83,15 @@ public class AddEditEventActivity extends AppCompatActivity {
     private EventController eventController;
     private EventModel eventModel;
     SharedPreferences prefs;
+    PostEventRequest postEventRequest;
 
     private String title;
     private int id;
 
     InternalStorageHelper internalStorageHelper;
     SaveEventHelper saveEventHelper;
+
+    ImageEncoder imageEncoder;
 
     Handler mHandler = new Handler();
 
@@ -104,6 +108,7 @@ public class AddEditEventActivity extends AppCompatActivity {
         time_picker = findViewById(R.id.event_time_picker);
         event_location = findViewById(R.id.edit_event_location);
         bitmapToByteArrayHelper = new BitmapToByteArrayHelper();
+        imageEncoder = new ImageEncoder(bitmapToByteArrayHelper, this);
         btn_save_event = findViewById(R.id.btn_save_event);
 
         prefs = this.getSharedPreferences("prefs", Context.MODE_PRIVATE);
@@ -139,6 +144,8 @@ public class AddEditEventActivity extends AppCompatActivity {
                     id = id1;
 
                     new LoadImgAsyncTask(bitmap, id, AddEditEventActivity.this).execute();
+
+
 
 //                    setResForParAct();
                     //                    saveEvent(bitmap);
@@ -335,15 +342,25 @@ public class AddEditEventActivity extends AppCompatActivity {
 
             if (path != null) {
 
-                eventController.onAddButtonClicked(new Event(
-                        new Random().nextInt(),
+                Event event = new Event(new Random().nextInt(),
                         prefs.getInt("UserID", 0),
                         title,
                         path,
                         String.valueOf(id),
                         0,
                         0
-                        ));
+                );
+
+                event.setBase64Img(imageEncoder.bitmapToBase64String(bitmap));
+
+
+//                Log.d("JSON: ", event.getGson(event));
+
+                postEventRequest = new PostEventRequest(AddEditEventActivity.this);
+                postEventRequest.postEvent(event);
+
+                eventController.onAddButtonClicked(event);
+
                 setResForParAct();
             }
         }

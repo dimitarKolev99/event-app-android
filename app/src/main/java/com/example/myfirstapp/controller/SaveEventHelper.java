@@ -5,7 +5,11 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.widget.EditText;
 
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.myfirstapp.model.Event;
+
+import java.util.List;
 
 public interface SaveEventHelper {
 
@@ -33,4 +37,11 @@ public interface SaveEventHelper {
     Event editEvent(Bitmap bitmap, EditText editTextTitle, EditText editTextDescription,
                     EditText date_picker, EditText time_picker, EditText event_location,
                     Context context, SharedPreferences prefs, int id);
+
+    /**
+     * convert the base64 strings from the api to images
+     * @param eventList the response from the api
+     * @return the updated list of events with paths to the images (local)
+     */
+    List<Event> processResponse(List<Event> eventList, Context context, EventAdapter eventAdapter, RecyclerView recyclerView);
 }

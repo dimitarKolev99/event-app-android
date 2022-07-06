@@ -4,28 +4,33 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.example.myfirstapp.AddEditEventActivity;
-import com.example.myfirstapp.MainActivity;
-import com.example.myfirstapp.R;
+import androidx.recyclerview.widget.RecyclerView;
+
+
+import com.example.myfirstapp.async_tasks.LoadImgAsyncTask;
 import com.example.myfirstapp.internal_storage_helper.InternalStorageHelper;
 import com.example.myfirstapp.internal_storage_helper.InternalStorageHelperImpl;
 import com.example.myfirstapp.model.Event;
 import com.example.myfirstapp.model.EventModel;
+import com.example.myfirstapp.network.PostEventRequest;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
 public class SaveEventHelperImpl implements SaveEventHelper{
 
-    InternalStorageHelper internalStorageHelper = new InternalStorageHelperImpl();
+    InternalStorageHelperImpl internalStorageHelper = new InternalStorageHelperImpl();
 
     EventModel eventModel;
     EventController eventController;
+    SaveImgAsyncTask saveImgAsyncTask;
 
     private String title;
     private int id;
@@ -33,7 +38,8 @@ public class SaveEventHelperImpl implements SaveEventHelper{
     int flag = 0;
 
 
-    public SaveEventHelperImpl(EventModel eventModel, EventController eventController) {
+    public SaveEventHelperImpl(EventModel eventModel,
+                               EventController eventController) {
         this.eventModel = eventModel;
         this.eventController = eventController;
     }
@@ -47,7 +53,7 @@ public class SaveEventHelperImpl implements SaveEventHelper{
 
 //        String path = internalStorageHelper.saveToInternalStorage(bitmap, id, context);
 
-        new LoadImgAsyncTask(bitmap, id, context).execute();
+        new LoadImgAsyncTask(bitmap, id, context, internalStorageHelper).execute();
 
         return new Event(title);
 
@@ -85,31 +91,72 @@ public class SaveEventHelperImpl implements SaveEventHelper{
 
     }
 
-    private class LoadImgAsyncTask extends AsyncTask<Void, Void, String> {
-        private Bitmap bitmap;
-        private int rand_id;
+    @Override
+    public List<Event> processResponse(List<Event> eventList, Context context, EventAdapter eventAdapter, RecyclerView recyclerView) {
+        new DeleteImagesAsyncTask(context).execute(eventList);
+        new SaveImgAsyncTask(context, internalStorageHelper, eventAdapter, recyclerView).execute(eventList);
+        return null;
+    }
+
+    private class DeleteImagesAsyncTask extends AsyncTask<List<Event>, Void, Void> {
         private Context context;
 
-        private LoadImgAsyncTask(Bitmap bitmap, int rand_id, Context context) {
-            this.bitmap = bitmap;
-            this.rand_id = rand_id;
+        public DeleteImagesAsyncTask(Context context) {
             this.context = context;
         }
 
         @Override
-        protected String doInBackground(Void... voids) {
-            return internalStorageHelper.saveToInternalStorage(bitmap, rand_id, context);
+        protected Void doInBackground(List<Event>... eventList) {
+
+            for (Event event: eventList[0]) {
+                context.deleteFile("img" + event.getTitle() + ".jpg");
+            }
+            Log.d("DELETE", String.valueOf(eventList.length));
+            return null;
+        }
+    }
+
+
+    private class SaveImgAsyncTask extends AsyncTask<List<Event>, Void, List<Event>>{
+
+        private Context context;
+        private InternalStorageHelper internalStorageHelper;
+        private EventAdapter eventAdapter;
+        private RecyclerView recyclerView;
+
+
+        private SaveImgAsyncTask(Context context,
+                                 InternalStorageHelperImpl internalStorageHelper,
+                                 EventAdapter eventAdapter,
+                                 RecyclerView recyclerView) {
+            this.context = context;
+            this.internalStorageHelper = internalStorageHelper;
+            this.eventAdapter = eventAdapter;
+            this.recyclerView = recyclerView;
         }
 
         @Override
-        protected void onPostExecute(String path) {
-            super.onPostExecute(path);
+        protected List<Event> doInBackground(List<Event>... lists) {
 
-            if (path != null) {
-//                eventController.onAddButtonClicked(new Event(title, path, String.valueOf(id)));
+            List<Event> newList = new ArrayList<>();
+
+            for (Event e: lists[0]) {
+                e.setImagePath(internalStorageHelper.saveToInternalStorageFromBase64(e.getBase64Img(), e.getEventID(), context));
+                newList.add(e);
+            }
+            return newList;
+        }
+
+        @Override
+        protected void onPostExecute(List<Event> newList) {
+            super.onPostExecute(newList);
+                eventAdapter.updateEventsListItems(newList);
+                recyclerView.setAdapter(eventAdapter);
+                //update adapter here
+//            eventController.deleteAll();
+//                eventController.addMany(newList);
             }
         }
     }
 
 
-}

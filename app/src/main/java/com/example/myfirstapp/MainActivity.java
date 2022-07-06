@@ -17,7 +17,6 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,10 +26,15 @@ import android.widget.Toast;
 import com.example.myfirstapp.controller.EventAdapter;
 import com.example.myfirstapp.controller.EventControllerImpl;
 import com.example.myfirstapp.controller.OnItemClickListener;
+import com.example.myfirstapp.controller.SaveEventHelper;
+import com.example.myfirstapp.controller.SaveEventHelperImpl;
 import com.example.myfirstapp.model.DBHelper;
 import com.example.myfirstapp.model.Event;
 import com.example.myfirstapp.model.EventModel;
 import com.example.myfirstapp.model.EventModelImpl;
+import com.example.myfirstapp.network.GetEventsNet;
+import com.example.myfirstapp.utils.BitmapToByteArrayHelper;
+import com.example.myfirstapp.utils.ImageEncoder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -61,6 +65,14 @@ public class MainActivity extends AppCompatActivity {
 
     SharedPreferences sharedPreferences;
 
+    ImageEncoder imageEncoder;
+
+    BitmapToByteArrayHelper bitmapToByteArrayHelper;
+
+    GetEventsNet getEventsNet;
+
+    SaveEventHelper saveEventHelper;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,11 +81,21 @@ public class MainActivity extends AppCompatActivity {
 
         sharedPreferences = this.getSharedPreferences("prefs", Context.MODE_PRIVATE);
 
-        Log.d("Logging User ID", String.valueOf(sharedPreferences.getInt("UserID", 0)));
+        bitmapToByteArrayHelper = new BitmapToByteArrayHelper();
+
+        imageEncoder = new ImageEncoder(bitmapToByteArrayHelper, this);
 
         eventModel = new EventModelImpl(new DBHelper(this));
         eventControllerImpl = new EventControllerImpl(eventModel, this);
         setViews();
+
+        saveEventHelper = new SaveEventHelperImpl(eventModel, eventControllerImpl);
+
+        getEventsNet = new GetEventsNet(MainActivity.this, (SaveEventHelperImpl) saveEventHelper,
+                eventAdapter, recyclerView);
+
+        Log.d("Logging User ID", String.valueOf(sharedPreferences.getInt("UserID", 0)));
+
         new GetEventAsyncTask(eventControllerImpl).execute();
 
         /*
@@ -170,6 +192,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                new DeleteEventAsyncTask(eventControllerImpl, eventAdapter, viewHolder).execute();
                 /*
                 if (eventController.onRemoveButtonClicked(eventAdapter.getEventAt(viewHolder.getAdapterPosition()))) {
                     eventList = eventController.getList();
@@ -242,24 +265,30 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private static class InsertEventAsyncTask extends AsyncTask<Event, Void, List<Event>> {
+    private class DeleteEventAsyncTask extends AsyncTask<Event, Void, List<Event>> {
         private EventControllerImpl eventControllerImpl;
         private EventAdapter eventAdapter;
+        private RecyclerView.ViewHolder viewHolder;
 
-        private InsertEventAsyncTask(EventControllerImpl eventControllerImpl, EventAdapter eventAdapter) {
+        private DeleteEventAsyncTask(EventControllerImpl eventControllerImpl, EventAdapter eventAdapter,
+                                     RecyclerView.ViewHolder viewHolder) {
             this.eventControllerImpl = eventControllerImpl;
             this.eventAdapter = eventAdapter;
+            this.viewHolder = viewHolder;
         }
 
         @Override
         protected List<Event> doInBackground(Event... events) {
-            eventControllerImpl.onAddButtonClicked(events[0]);
+            eventControllerImpl.onRemoveButtonClicked(eventAdapter.getEventAt(viewHolder.getAdapterPosition()));
             return eventControllerImpl.onViewLoaded();
         }
 
         @Override
         protected void onPostExecute(List<Event> events) {
             super.onPostExecute(events);
+
+            updateResView(events);
+            recyclerView.setAdapter(eventAdapter);
 
         }
     }
@@ -280,14 +309,19 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(List<Event> events) {
             super.onPostExecute(events);
 
+            getEventsNet.getAllEvents();
+
             if (events != null) {
-                Toast.makeText(MainActivity.this, "Post Exec", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(MainActivity.this, "Post Exec", Toast.LENGTH_SHORT).show();
             }
 
             if (events != null) {
                 eventList = events;
                 updateResView(events);
                 recyclerView.setAdapter(eventAdapter);
+
+//                Log.d("JSON:", events.get(0).getGson(events.get(0)));
+
             }
         }
     }

@@ -14,6 +14,8 @@ import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 public interface NetworkService {
+    String BASE_URL = "http://10.0.2.2:3000/";
+
     @GET("events")
     Call<List<Event>> getAllEvents();
 

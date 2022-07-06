@@ -199,7 +199,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public boolean delete(Event event) {
         sqLiteDatabase = this.getWritableDatabase();
-        return sqLiteDatabase.delete(EVENT_TABLE, COLUMN_EVENT_ID + " = " + event.getTitle(), null) > 0;
+        return sqLiteDatabase.delete(EVENT_TABLE, COLUMN_EVENT_ID + " = " + event.getEventID(), null) > 0;
     }
 
     public void deleteAllEvents() {

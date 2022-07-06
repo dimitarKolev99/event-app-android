@@ -4,6 +4,10 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.widget.ImageView;
 
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.myfirstapp.controller.EventAdapter;
+
 public interface InternalStorageHelper {
 
     /**
@@ -23,4 +27,7 @@ public interface InternalStorageHelper {
      * @param context
      */
     void loadImageFromStorage(String path, String imgName, ImageView imageView, Context context);
+
+
+    public String saveToInternalStorageFromBase64(String base64String, int id, Context context);
 }
