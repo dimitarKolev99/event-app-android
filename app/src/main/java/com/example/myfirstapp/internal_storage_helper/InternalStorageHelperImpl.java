@@ -3,6 +3,7 @@ package com.example.myfirstapp.internal_storage_helper;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.graphics.Bitmap;
+import android.util.Log;
 import android.widget.ImageView;
 
 import com.example.myfirstapp.AddEditEventActivity;
@@ -72,6 +73,7 @@ public class InternalStorageHelperImpl implements InternalStorageHelper{
                 e.printStackTrace();
             }
         }
+        Log.d("IMG: ", myPath.getAbsolutePath());
         return directory.getAbsolutePath();
     }
 

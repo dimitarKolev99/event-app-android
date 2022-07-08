@@ -93,6 +93,11 @@ public class SaveEventHelperImpl implements SaveEventHelper{
 
     @Override
     public List<Event> processResponse(List<Event> eventList, Context context, EventAdapter eventAdapter, RecyclerView recyclerView) {
+
+        for (int i = 0; i < eventList.size(); i++) {
+            Log.d("Logging events: ", String.valueOf(eventList.get(i).getEventID()));
+        }
+
         new DeleteImagesAsyncTask(context).execute(eventList);
         new SaveImgAsyncTask(context, internalStorageHelper, eventAdapter, recyclerView).execute(eventList);
         return null;
@@ -107,11 +112,7 @@ public class SaveEventHelperImpl implements SaveEventHelper{
 
         @Override
         protected Void doInBackground(List<Event>... eventList) {
-
-            for (Event event: eventList[0]) {
-                context.deleteFile("img" + event.getTitle() + ".jpg");
-            }
-            Log.d("DELETE", String.valueOf(eventList.length));
+//            Log.d("DELETE", );
             return null;
         }
     }
@@ -141,7 +142,11 @@ public class SaveEventHelperImpl implements SaveEventHelper{
             List<Event> newList = new ArrayList<>();
 
             for (Event e: lists[0]) {
+                Log.d("EVENT_ID", String.valueOf(e.getEventID()));
+                Log.d("Title: ", String.valueOf(e.getTitle()));
+                String path = internalStorageHelper.saveToInternalStorageFromBase64(e.getBase64Img(), e.getEventID(), context);
                 e.setImagePath(internalStorageHelper.saveToInternalStorageFromBase64(e.getBase64Img(), e.getEventID(), context));
+                Log.d("PATH: ", path);
                 newList.add(e);
             }
             return newList;
@@ -150,6 +155,8 @@ public class SaveEventHelperImpl implements SaveEventHelper{
         @Override
         protected void onPostExecute(List<Event> newList) {
             super.onPostExecute(newList);
+                Log.d("PATH: ", String.valueOf(newList.get(0).getImagePath()));
+                Log.d("NAME: ", String.valueOf(newList.get(0).getImageName()));
                 eventAdapter.updateEventsListItems(newList);
                 recyclerView.setAdapter(eventAdapter);
                 //update adapter here
