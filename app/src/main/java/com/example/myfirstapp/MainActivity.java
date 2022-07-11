@@ -9,11 +9,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -40,7 +43,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener {
 
     private static final String TAG = "MAIN_ACTIVITY";
 
@@ -73,6 +76,8 @@ public class MainActivity extends AppCompatActivity {
 
     SaveEventHelper saveEventHelper;
 
+    SwipeRefreshLayout mSwipeRefreshLayout;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,14 +94,43 @@ public class MainActivity extends AppCompatActivity {
         eventControllerImpl = new EventControllerImpl(eventModel, this);
         setViews();
 
-        saveEventHelper = new SaveEventHelperImpl(eventModel, eventControllerImpl);
+        mSwipeRefreshLayout = findViewById(R.id.swipe_container);
+
+        saveEventHelper = new SaveEventHelperImpl(eventModel, eventControllerImpl, mSwipeRefreshLayout);
 
         getEventsNet = new GetEventsNet(MainActivity.this, (SaveEventHelperImpl) saveEventHelper,
                 eventAdapter, recyclerView);
 
+
+        mSwipeRefreshLayout.setOnRefreshListener(this);
+        mSwipeRefreshLayout.setColorSchemeResources(R.color.purple_200,
+                android.R.color.holo_green_dark,
+                android.R.color.holo_orange_dark,
+                android.R.color.holo_blue_dark);
+
+        /**
+         * Showing Swipe Refresh animation on activity create
+         * As animation won't start on onCreate, post runnable is used
+         */
+        if (isNetworkAvailable()) {
+            mSwipeRefreshLayout.post(new Runnable() {
+
+                @Override
+                public void run() {
+
+                    mSwipeRefreshLayout.setRefreshing(true);
+
+                    // Fetching data from server
+                    getEventsNet.getAllEvents();
+                }
+            });
+        } else {
+            mSwipeRefreshLayout.setRefreshing(true);
+            new GetEventAsyncTask(eventControllerImpl).execute();
+        }
+
         Log.d("Logging User ID", String.valueOf(sharedPreferences.getInt("UserID", 0)));
 
-        new GetEventAsyncTask(eventControllerImpl).execute();
 
         /*
         new Thread(new Runnable() {
@@ -211,6 +245,10 @@ public class MainActivity extends AppCompatActivity {
         }).attachToRecyclerView(recyclerView);
     }
 
+    void setRefresh(boolean bool) {
+        mSwipeRefreshLayout.setRefreshing(bool);
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -265,6 +303,16 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public void onRefresh() {
+        if (isNetworkAvailable()) {
+            getEventsNet.getAllEvents();
+        } else {
+            mSwipeRefreshLayout.setRefreshing(true);
+            new GetEventAsyncTask(eventControllerImpl).execute();
+        }
+    }
+
     private class DeleteEventAsyncTask extends AsyncTask<Event, Void, List<Event>> {
         private EventControllerImpl eventControllerImpl;
         private EventAdapter eventAdapter;
@@ -309,10 +357,16 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(List<Event> events) {
             super.onPostExecute(events);
 
-            getEventsNet.getAllEvents();
+            Log.d("GET EVENTS: ", "POST EXEC");
+
+            if (isNetworkAvailable()) {
+                getEventsNet.getAllEvents();
+            }
 
             if (events != null) {
-//                Toast.makeText(MainActivity.this, "Post Exec", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Events Local DB NOT NULL", Toast.LENGTH_SHORT).show();
+            } else {
+                Log.d("GET EVENTS: ", "EVENTS IS NULL");
             }
 
             if (events != null) {
@@ -320,9 +374,16 @@ public class MainActivity extends AppCompatActivity {
                 updateResView(events);
                 recyclerView.setAdapter(eventAdapter);
 
-//                Log.d("JSON:", events.get(0).getGson(events.get(0)));
-
             }
+
+            setRefresh(false);
         }
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 }

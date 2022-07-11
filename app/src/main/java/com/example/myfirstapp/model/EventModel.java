@@ -9,7 +9,7 @@ public interface EventModel {
      * @param event
      * @return if insertion was successful or not
      */
-    public boolean addEvent(Event event);
+    boolean addEvent(Event event);
 
     /**
      * update an event in the events table on id of
@@ -17,7 +17,7 @@ public interface EventModel {
      * @param event
      * @return if updating was successful or not
      */
-    public boolean updateEvent(Event event);
+    boolean updateEvent(Event event);
 
 
     /**
@@ -26,14 +26,17 @@ public interface EventModel {
      * @param event
      * @return if deletion was successful or not
      */
-    public boolean deleteEvent(Event event);
+    boolean deleteEvent(Event event);
 
     /**
      * get a list of all events in the
      * events table
      * @return List of Event object
      */
-    public List<Event> getAllEvents();
+    List<Event> getAllEvents();
 
+    void insertMany(List<Event> eventList);
+
+    void deleteAllEvents();
 
 }

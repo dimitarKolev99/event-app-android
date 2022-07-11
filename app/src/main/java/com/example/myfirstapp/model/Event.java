@@ -1,46 +1,41 @@
 package com.example.myfirstapp.model;
 
-import android.graphics.Bitmap;
-
-import com.example.myfirstapp.utils.BitmapToByteArrayHelper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import org.json.JSONObject;
-
 public class Event {
-    int eventID;
-    int organizerID;
+    int eventid;
+    int organizerid;
     String title;
-    String imagePath;
+    String imagepath;
     String imageURI;
     String imageName;
-    int interestedCount;
-    int favStatus;
+    int interestedcount;
+    int favstatus;
     String base64Img;
 
     public Event(String title) {
         this.title = title;
     }
 
-    public Event(int eventID, int organizerID, String title, String imagePath, String imageName, int interestedCount,
-                 int favStatus) {
-        this.eventID = eventID;
-        this.organizerID = organizerID;
+    public Event(int eventid, int organizerid, String title, String imagepath, String imageName, int interestedcount,
+                 int favstatus) {
+        this.eventid = eventid;
+        this.organizerid = organizerid;
         this.title = title;
-        this.imagePath = imagePath;
+        this.imagepath = imagepath;
         this.imageName = imageName;
-        this.interestedCount = interestedCount;
-        this.favStatus = favStatus;
-        this.imageURI = imagePath+"/img"+imageName+".jpg";
+        this.interestedcount = interestedcount;
+        this.favstatus = favstatus;
+        this.imageURI = imagepath +"/img"+imageName+".jpg";
     }
 
-    public int getEventID() {
-        return eventID;
+    public int getEventid() {
+        return eventid;
     }
 
-    public int getOrganizerID() {
-        return organizerID;
+    public int getOrganizerid() {
+        return organizerid;
     }
 
     public String getTitle() {
@@ -50,12 +45,13 @@ public class Event {
     public void setTitle(String title) {
         this.title = title;
     }
-    public String getImagePath() {
-        return imagePath;
+
+    public String getImagepath() {
+        return imagepath;
     }
 
-    public void setImagePath(String imagePath) {
-        this.title = imagePath;
+    public void setImagepath(String imagepath) {
+        this.imagepath = imagepath;
     }
 
     public String getImageName() {
@@ -66,20 +62,20 @@ public class Event {
         this.imageName = imageName;
     }
 
-    public int getInterestedCount() {
-        return interestedCount;
+    public int getInterestedcount() {
+        return interestedcount;
     }
 
-    public void setInterestedCount(int interestedCount) {
-        this.interestedCount = interestedCount;
+    public void setInterestedcount(int interestedcount) {
+        this.interestedcount = interestedcount;
     }
 
-    public int getFavStatus() {
-        return favStatus;
+    public int getFavstatus() {
+        return favstatus;
     }
 
-    public void setFavStatus(int favStatus) {
-        this.favStatus = favStatus;
+    public void setFavstatus(int favstatus) {
+        this.favstatus = favstatus;
     }
 
     public String getBase64Img() {

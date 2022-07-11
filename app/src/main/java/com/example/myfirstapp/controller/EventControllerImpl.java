@@ -82,6 +82,16 @@ public class EventControllerImpl implements EventController{
         }
     }
 
+    @Override
+    public void insertMany(List<Event> eventList) {
+        eventModel.insertMany(eventList);
+    }
+
+    @Override
+    public void deleteAllEvents() {
+        eventModel.deleteAllEvents();
+    }
+
     public void showErrorToast(String errorMessage) {
 //        Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show();
         Log.d("EVENT_CONTROLLER", errorMessage);

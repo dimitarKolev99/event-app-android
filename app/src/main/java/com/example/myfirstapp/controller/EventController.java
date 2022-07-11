@@ -32,4 +32,8 @@ public interface EventController {
      */
     void onEditButtonClicked(Event event);
 
+    void insertMany(List<Event> eventList);
+
+    void deleteAllEvents();
+
 }

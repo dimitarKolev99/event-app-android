@@ -256,7 +256,8 @@ public class AddEditEventActivity extends AppCompatActivity {
 
 //        doCall();
         setResult(RESULT_OK, data);
-        finish();
+        Toast.makeText(this, "Yey!", Toast.LENGTH_SHORT).show();
+//        finish();
     }
 
     private void doCall() {

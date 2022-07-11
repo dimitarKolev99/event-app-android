@@ -54,6 +54,18 @@ public class EventModelImpl implements EventModel{
         return null;
     }
 
+    @Override
+    public void insertMany(List<Event> eventList) {
+        dbHelper.insertMany(eventList);
+    }
+
+    @Override
+    public void deleteAllEvents() {
+        dbHelper.deleteAllEvents();
+    }
+
+
+
     /*
     @Override
     public List<Event> getUserEvents(int id) {

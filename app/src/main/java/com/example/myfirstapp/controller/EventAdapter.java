@@ -1,7 +1,6 @@
 package com.example.myfirstapp.controller;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -91,22 +90,22 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
                     int position = getAdapterPosition();
                     Event currentEvent = getEventAt(position);
 
-                    if (currentEvent.getFavStatus() == 0) {
-                        currentEvent.setFavStatus(1);
-                        currentEvent.setInterestedCount(currentEvent.getInterestedCount() + 1);
-                        getIntCountTV().setText(String.valueOf(currentEvent.getInterestedCount()));
+                    if (currentEvent.getFavstatus() == 0) {
+                        currentEvent.setFavstatus(1);
+                        currentEvent.setInterestedcount(currentEvent.getInterestedcount() + 1);
+                        getIntCountTV().setText(String.valueOf(currentEvent.getInterestedcount()));
 
                         //onEditButtonClicked here
                         eventController.onEditButtonClicked(currentEvent);
                         favBtn.setBackgroundResource(R.drawable.ic_baseline_favorite_24);
                         favBtn.setSelected(true);
                     } else {
-                        currentEvent.setInterestedCount(currentEvent.getInterestedCount() - 1);
+                        currentEvent.setInterestedcount(currentEvent.getInterestedcount() - 1);
 
-                        getIntCountTV().setText(String.valueOf(currentEvent.getInterestedCount()));
+                        getIntCountTV().setText(String.valueOf(currentEvent.getInterestedcount()));
 
                         eventController.onEditButtonClicked(currentEvent);
-                        currentEvent.setFavStatus(0);
+                        currentEvent.setFavstatus(0);
 
                         //onEditButtonClicked here
                         favBtn.setBackgroundResource(R.drawable.ic_baseline_favorite_border_24);
@@ -162,13 +161,13 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
         holder.getTextView().setText(currentEvent.getTitle());
 
-        if (currentEvent.getFavStatus() == 0) {
+        if (currentEvent.getFavstatus() == 0) {
             holder.getFavBtn().setBackgroundResource(R.drawable.ic_baseline_favorite_border_24);
         } else {
             holder.getFavBtn().setBackgroundResource(R.drawable.ic_baseline_favorite_24);
         }
 
-        holder.getIntCountTV().setText(String.valueOf(currentEvent.getInterestedCount()));
+        holder.getIntCountTV().setText(String.valueOf(currentEvent.getInterestedcount()));
 
         /*
         Log.d("image path", currentEvent.getImagePath());
@@ -176,12 +175,12 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
          */
 
-        loadImageFromStorage(currentEvent.getImagePath(), currentEvent.getImageName(), holder.getImage());
+        loadImageFromStorage(currentEvent.getImagepath(), holder.getImage());
     }
 
-    private void loadImageFromStorage(String path, String imgName, ImageView imageView)
+    private void loadImageFromStorage(String path, ImageView imageView)
     {
-        File f = new File(path+"/img"+imgName+".jpg");
+        File f = new File(path);
         Picasso.with(context).load(f).fit().centerCrop()
                 .placeholder(AppCompatResources.getDrawable(context, R.drawable.ic_event_icon))
                 .error(AppCompatResources.getDrawable(context, R.drawable.ic_close))

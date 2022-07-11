@@ -4,8 +4,10 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -110,8 +112,8 @@ public class DBHelper extends SQLiteOpenHelper {
     private ContentValues loadContentValues(Event event) {
         ContentValues contentValues = new ContentValues();
 
-        if (event.getEventID() != 0) {
-            contentValues.put(COLUMN_EVENT_ID, event.getEventID());
+        if (event.getEventid() != 0) {
+            contentValues.put(COLUMN_EVENT_ID, event.getEventid());
         }
 
         if (prefs.getInt("UserID", 0) != 0) {
@@ -120,17 +122,17 @@ public class DBHelper extends SQLiteOpenHelper {
 
         contentValues.put(COLUMN_TITLE, event.getTitle());
 
-        if (event.getImagePath() != null) {
-            contentValues.put(COLUMN_IMAGE, event.getImagePath());
+        if (event.getImagepath() != null) {
+            contentValues.put(COLUMN_IMAGE, event.getImagepath());
         }
 
         if (event.getImageName() != null) {
             contentValues.put(COLUMN_IMAGE_NAME, event.getImageName());
         }
 
-        contentValues.put(COLUMN_INTERESTED_COUNT, event.getInterestedCount());
+        contentValues.put(COLUMN_INTERESTED_COUNT, event.getInterestedcount());
 
-        contentValues.put(COLUMN_FAVORITE_STATUS, event.getFavStatus());
+        contentValues.put(COLUMN_FAVORITE_STATUS, event.getFavstatus());
 
         return contentValues;
     }
@@ -138,7 +140,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public boolean update(Event event) {
         sqLiteDatabase = this.getWritableDatabase();
-        return sqLiteDatabase.update(EVENT_TABLE, loadContentValues(event), COLUMN_EVENT_ID + " = " + event.getEventID()
+        return sqLiteDatabase.update(EVENT_TABLE, loadContentValues(event), COLUMN_EVENT_ID + " = " + event.getEventid()
                 , null) > 0;
     }
 
@@ -161,7 +163,12 @@ public class DBHelper extends SQLiteOpenHelper {
                         cursor.getInt(6)
                 );
 
+
                 events.add(event);
+            }
+            for (int i = 0; i < events.size(); i++) {
+                Log.d("DB", events.get(i).getTitle());
+
             }
             cursor.close();
         }
@@ -199,11 +206,68 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public boolean delete(Event event) {
         sqLiteDatabase = this.getWritableDatabase();
-        return sqLiteDatabase.delete(EVENT_TABLE, COLUMN_EVENT_ID + " = " + event.getEventID(), null) > 0;
+        return sqLiteDatabase.delete(EVENT_TABLE, COLUMN_EVENT_ID + " = " + event.getEventid(), null) > 0;
+    }
+
+    public void insertMany(List<Event> eventList) {
+        for (int i = 0; i < eventList.size(); i++) {
+            Event event = eventList.get(i);
+            insertManySQL(event);
+        }
+    }
+
+    public void insertManySQL(Event event) {
+        sqLiteDatabase = this.getWritableDatabase();
+        sqLiteDatabase.beginTransaction();
+        try {
+
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(COLUMN_EVENT_ID, event.getEventid());
+            contentValues.put(COLUMN_ORGANIZER_ID, event.getOrganizerid());
+            contentValues.put(COLUMN_TITLE, event.getTitle());
+            contentValues.put(COLUMN_IMAGE, event.getImagepath());
+            contentValues.put(COLUMN_INTERESTED_COUNT, event.getInterestedcount());
+            contentValues.put(COLUMN_FAVORITE_STATUS, event.getFavstatus());
+
+            sqLiteDatabase.insert(EVENT_TABLE, null, contentValues);
+
+            /*
+            sqLiteDatabase.execSQL(
+                    "INSERT INTO " + EVENT_TABLE + " (" +
+                            COLUMN_EVENT_ID + ", " +
+                            COLUMN_ORGANIZER_ID + ", " +
+                            COLUMN_TITLE + ", " +
+                            COLUMN_IMAGE + ", " +
+                            COLUMN_INTERESTED_COUNT + ", " +
+                            COLUMN_FAVORITE_STATUS + ") " +
+                            "VALUES ("+
+                    event.getEventid() + ", " +
+                    event.getOrganizerid() + ", " +
+                    event.getTitle() + ", `" +
+                    event.getImagepath() + "`, " +
+                    event.getInterestedcount() + ", " +
+                    event.getFavstatus() +
+                    ");");
+
+             */
+            sqLiteDatabase.setTransactionSuccessful();
+        } catch (SQLException sqlException) {
+            Log.d("ERROR IN INSERTING: ", sqlException.getMessage());
+        } finally {
+            sqLiteDatabase.endTransaction();
+        }
     }
 
     public void deleteAllEvents() {
         sqLiteDatabase = this.getWritableDatabase();
-        sqLiteDatabase.execSQL("DELETE FROM " +  EVENT_TABLE);
+        sqLiteDatabase.beginTransaction();
+        try {
+            sqLiteDatabase.execSQL("DELETE FROM " +  EVENT_TABLE);
+            sqLiteDatabase.setTransactionSuccessful();
+        } catch (SQLException sqlException) {
+            Log.d("ERROR IN DELETING: ", sqlException.getMessage());
+        } finally {
+            sqLiteDatabase.endTransaction();
+        }
     }
 }

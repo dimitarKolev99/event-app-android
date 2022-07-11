@@ -74,7 +74,7 @@ public class InternalStorageHelperImpl implements InternalStorageHelper{
             }
         }
         Log.d("IMG: ", myPath.getAbsolutePath());
-        return directory.getAbsolutePath();
+        return myPath.getAbsolutePath();
     }
 
     public void loadImageFromStorage(String path, String imgName, ImageView imageView, Context context)

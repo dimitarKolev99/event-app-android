@@ -31,7 +31,6 @@ public class GetEventsNet implements Callback<List<Event>> {
         this.saveEventHelper = saveEventHelper;
         this.eventAdapter = eventAdapter;
         this.recyclerView = recyclerView;
-
     }
 
     SaveEventHelper saveEventHelper;
@@ -41,6 +40,7 @@ public class GetEventsNet implements Callback<List<Event>> {
         Call<List<Event>> call = RetrofitClient.getInstance().getNetworkService().getAllEvents();
 
         call.enqueue(this);
+
     }
 
     @Override

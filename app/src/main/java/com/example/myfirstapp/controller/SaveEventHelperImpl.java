@@ -9,6 +9,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 
 import com.example.myfirstapp.async_tasks.LoadImgAsyncTask;
@@ -16,7 +17,6 @@ import com.example.myfirstapp.internal_storage_helper.InternalStorageHelper;
 import com.example.myfirstapp.internal_storage_helper.InternalStorageHelperImpl;
 import com.example.myfirstapp.model.Event;
 import com.example.myfirstapp.model.EventModel;
-import com.example.myfirstapp.network.PostEventRequest;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -31,12 +31,22 @@ public class SaveEventHelperImpl implements SaveEventHelper{
     EventModel eventModel;
     EventController eventController;
     SaveImgAsyncTask saveImgAsyncTask;
+    SwipeRefreshLayout mSwipeRefreshLayout;
+
 
     private String title;
     private int id;
 
     int flag = 0;
 
+
+    public SaveEventHelperImpl(EventModel eventModel,
+                               EventController eventController,
+                               SwipeRefreshLayout mSwipeRefreshLayout) {
+        this.eventModel = eventModel;
+        this.eventController = eventController;
+        this.mSwipeRefreshLayout = mSwipeRefreshLayout;
+    }
 
     public SaveEventHelperImpl(EventModel eventModel,
                                EventController eventController) {
@@ -95,11 +105,11 @@ public class SaveEventHelperImpl implements SaveEventHelper{
     public List<Event> processResponse(List<Event> eventList, Context context, EventAdapter eventAdapter, RecyclerView recyclerView) {
 
         for (int i = 0; i < eventList.size(); i++) {
-            Log.d("Logging events: ", String.valueOf(eventList.get(i).getEventID()));
+            Log.d("Logging events: ", String.valueOf(eventList.get(i).getEventid()));
         }
 
         new DeleteImagesAsyncTask(context).execute(eventList);
-        new SaveImgAsyncTask(context, internalStorageHelper, eventAdapter, recyclerView).execute(eventList);
+        new SaveImgAsyncTask(context, internalStorageHelper, eventAdapter, recyclerView, mSwipeRefreshLayout).execute(eventList);
         return null;
     }
 
@@ -124,16 +134,19 @@ public class SaveEventHelperImpl implements SaveEventHelper{
         private InternalStorageHelper internalStorageHelper;
         private EventAdapter eventAdapter;
         private RecyclerView recyclerView;
+        private SwipeRefreshLayout mSwipeRefreshLayout;
 
 
         private SaveImgAsyncTask(Context context,
                                  InternalStorageHelperImpl internalStorageHelper,
                                  EventAdapter eventAdapter,
-                                 RecyclerView recyclerView) {
+                                 RecyclerView recyclerView,
+                                 SwipeRefreshLayout mSwipeRefreshLayout) {
             this.context = context;
             this.internalStorageHelper = internalStorageHelper;
             this.eventAdapter = eventAdapter;
             this.recyclerView = recyclerView;
+            this.mSwipeRefreshLayout = mSwipeRefreshLayout;
         }
 
         @Override
@@ -142,11 +155,8 @@ public class SaveEventHelperImpl implements SaveEventHelper{
             List<Event> newList = new ArrayList<>();
 
             for (Event e: lists[0]) {
-                Log.d("EVENT_ID", String.valueOf(e.getEventID()));
-                Log.d("Title: ", String.valueOf(e.getTitle()));
-                String path = internalStorageHelper.saveToInternalStorageFromBase64(e.getBase64Img(), e.getEventID(), context);
-                e.setImagePath(internalStorageHelper.saveToInternalStorageFromBase64(e.getBase64Img(), e.getEventID(), context));
-                Log.d("PATH: ", path);
+                String path = internalStorageHelper.saveToInternalStorageFromBase64(e.getBase64Img(), e.getEventid(), context);
+                e.setImagepath(path);
                 newList.add(e);
             }
             return newList;
@@ -155,15 +165,41 @@ public class SaveEventHelperImpl implements SaveEventHelper{
         @Override
         protected void onPostExecute(List<Event> newList) {
             super.onPostExecute(newList);
-                Log.d("PATH: ", String.valueOf(newList.get(0).getImagePath()));
-                Log.d("NAME: ", String.valueOf(newList.get(0).getImageName()));
+
                 eventAdapter.updateEventsListItems(newList);
                 recyclerView.setAdapter(eventAdapter);
+
+                mSwipeRefreshLayout.setRefreshing(false);
                 //update adapter here
-//            eventController.deleteAll();
-//                eventController.addMany(newList);
+                new DeleteInsertEventsLocalDBAsyncTask(eventController).execute(newList);
             }
         }
+
+    private class DeleteInsertEventsLocalDBAsyncTask extends AsyncTask<List<Event>, Void, Void>{
+
+        private EventController eventController;
+
+        private DeleteInsertEventsLocalDBAsyncTask(EventController eventController) {
+            this.eventController = eventController;
+        }
+
+        @Override
+        protected Void doInBackground(List<Event>... lists) {
+
+            Log.d("DeleteInsertEvent", "HERE");
+            eventController.deleteAllEvents();
+            eventController.insertMany(lists[0]);
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void unused) {
+            super.onPostExecute(unused);
+        }
     }
+}
+
+
 
 
