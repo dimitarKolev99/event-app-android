@@ -5,6 +5,7 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -13,29 +14,34 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
 import com.example.myfirstapp.controller.EventAdapter;
+import com.example.myfirstapp.controller.EventController;
 import com.example.myfirstapp.controller.EventControllerImpl;
 import com.example.myfirstapp.controller.OnItemClickListener;
+import com.example.myfirstapp.controller.OnResponseListener;
 import com.example.myfirstapp.controller.SaveEventHelper;
 import com.example.myfirstapp.controller.SaveEventHelperImpl;
+import com.example.myfirstapp.controller.SetRefreshingListener;
 import com.example.myfirstapp.model.DBHelper;
 import com.example.myfirstapp.model.Event;
 import com.example.myfirstapp.model.EventModel;
 import com.example.myfirstapp.model.EventModelImpl;
-import com.example.myfirstapp.network.GetEventsNet;
+import com.example.myfirstapp.network.DialogBuilderListener;
+import com.example.myfirstapp.network.GetRequest;
+import com.example.myfirstapp.network.UpdateEvent;
+import com.example.myfirstapp.network.WebSocketClient;
 import com.example.myfirstapp.utils.BitmapToByteArrayHelper;
 import com.example.myfirstapp.utils.ImageEncoder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -43,13 +49,12 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.ArrayList;
 import java.util.List;
 
+import okhttp3.WebSocket;
+
 public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener {
 
-    private static final String TAG = "MAIN_ACTIVITY";
 
-    Handler mHandler = new Handler();
-
-    private EventControllerImpl eventControllerImpl;
+    private EventController eventController;
 
     private EventModel eventModel;
 
@@ -72,11 +77,13 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
     BitmapToByteArrayHelper bitmapToByteArrayHelper;
 
-    GetEventsNet getEventsNet;
+    GetRequest getRequest;
 
     SaveEventHelper saveEventHelper;
 
     SwipeRefreshLayout mSwipeRefreshLayout;
+
+    static WebSocket webSocket;
 
 
     @Override
@@ -91,15 +98,25 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         imageEncoder = new ImageEncoder(bitmapToByteArrayHelper, this);
 
         eventModel = new EventModelImpl(new DBHelper(this));
-        eventControllerImpl = new EventControllerImpl(eventModel, this);
+        eventController = new EventControllerImpl(eventModel, this);
         setViews();
 
         mSwipeRefreshLayout = findViewById(R.id.swipe_container);
 
-        saveEventHelper = new SaveEventHelperImpl(eventModel, eventControllerImpl, mSwipeRefreshLayout);
+        saveEventHelper = new SaveEventHelperImpl(this, eventController, mSwipeRefreshLayout, eventAdapter, recyclerView);
 
-        getEventsNet = new GetEventsNet(MainActivity.this, (SaveEventHelperImpl) saveEventHelper,
-                eventAdapter, recyclerView);
+        getRequest = new GetRequest();
+
+        getRequest.setOnResponseListener(new OnResponseListener() {
+            @Override
+            public void onResponse(int statusCode, List<Event> eventList) {
+                if (statusCode != 200) {
+                    new GetEventAsyncTask(eventController).execute();
+                } else {
+                    saveEventHelper.processNetworkResponse(eventList);
+                }
+            }
+        });
 
 
         mSwipeRefreshLayout.setOnRefreshListener(this);
@@ -108,11 +125,41 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                 android.R.color.holo_orange_dark,
                 android.R.color.holo_blue_dark);
 
+
+        WebSocketClient webSocketClient = new WebSocketClient();
+        webSocketClient.setListener(new DialogBuilderListener() {
+            @Override
+            public void buildDialog() {
+                runOnUiThread(() -> {
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setTitle("New events just came in");
+                    builder.setMessage("Do you want to update?");
+                    builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            dialogInterface.dismiss();
+                            turnOnSwipeRefresh();
+                        }
+                    });
+                    builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            dialogInterface.dismiss();
+                        }
+                    });
+                    builder.create().show();
+                });
+            }
+        });
+        webSocket = webSocketClient.getWebSocket();
+        setListener();
         /**
          * Showing Swipe Refresh animation on activity create
          * As animation won't start on onCreate, post runnable is used
          */
         if (isNetworkAvailable()) {
+            initSocketConnection();
             mSwipeRefreshLayout.post(new Runnable() {
 
                 @Override
@@ -121,26 +168,13 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                     mSwipeRefreshLayout.setRefreshing(true);
 
                     // Fetching data from server
-                    getEventsNet.getAllEvents();
+                    getRequest.performRequest(GetRequest.GET_ALL_EVENTS, "0", null);
                 }
             });
         } else {
             mSwipeRefreshLayout.setRefreshing(true);
-            new GetEventAsyncTask(eventControllerImpl).execute();
+            new GetEventAsyncTask(eventController).execute();
         }
-
-        Log.d("Logging User ID", String.valueOf(sharedPreferences.getInt("UserID", 0)));
-
-
-        /*
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                doCall();
-            }
-        }).start();
-
-         */
 
         addEventBtn = findViewById(R.id.add_event_btn);
         addEventBtn.setOnClickListener(new View.OnClickListener() {
@@ -153,8 +187,45 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         });
     }
 
+    public static WebSocket getWebSocket() {
+
+        return webSocket;
+    }
+
+    private void initSocketConnection() {
+        WebSocketClient webSocketClient = new WebSocketClient();
+        webSocketClient.setListener(new DialogBuilderListener() {
+            @Override
+            public void buildDialog() {
+
+            }
+        });
+        webSocket = webSocketClient.getWebSocket();
+    }
+
+
     public void openActivityForResult(Intent intent) {
         addEventActivityResultLauncher.launch(intent);
+    }
+
+    private void turnOnSwipeRefresh() {
+        if (isNetworkAvailable()) {
+            initSocketConnection();
+            mSwipeRefreshLayout.post(new Runnable() {
+
+                @Override
+                public void run() {
+
+                    mSwipeRefreshLayout.setRefreshing(true);
+
+                    // Fetching data from server
+                    getRequest.performRequest(GetRequest.GET_ALL_EVENTS, "0", null);
+                }
+            });
+        } else {
+            mSwipeRefreshLayout.setRefreshing(true);
+            new GetEventAsyncTask(eventController).execute();
+        }
     }
 
     ActivityResultLauncher<Intent> addEventActivityResultLauncher = registerForActivityResult(
@@ -163,12 +234,10 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
                 @Override
                 public void onActivityResult(ActivityResult result) {
+
                     if (result.getResultCode() == Activity.RESULT_OK &&
                             result.getData().getIntExtra(REQUEST_CODE, 0) == ADD_EVENT_REQUEST) {
 
-                        recreate();
-
-                        Toast.makeText(MainActivity.this, "On Activity Success Result", Toast.LENGTH_SHORT).show();
 
                     } else if (result.getResultCode() == Activity.RESULT_OK &&
                             result.getData().getIntExtra(REQUEST_CODE, 0) == EDIT_EVENT_REQUEST) {
@@ -192,28 +261,41 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     );
 
     public void setViews() {
-
-        eventAdapter = new EventAdapter(new ArrayList<Event>(), MainActivity.this, eventControllerImpl);
+        recyclerView = findViewById(R.id.recyclerView);
+        eventAdapter = new EventAdapter(new ArrayList<Event>(), MainActivity.this, eventController,
+                new UpdateEvent(MainActivity.this), recyclerView);
         eventAdapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onEventClick(Event event) {
                 Intent intent = new Intent(MainActivity.this, AddEditEventActivity.class);
                 intent.putExtra(REQUEST_CODE, EDIT_EVENT_REQUEST);
+                intent.putExtra(AddEditEventActivity.EXTRA_ID, event.getEventid());
+                intent.putExtra(AddEditEventActivity.EXTRA_ORGANIZER_ID, event.getOrganizerid());
                 intent.putExtra(AddEditEventActivity.EXTRA_TITLE, event.getTitle());
+                intent.putExtra(AddEditEventActivity.EXTRA_IMAGE_URI, event.getImagepath());
+                intent.putExtra(AddEditEventActivity.EXTRA_IMAGE_NAME, event.getImageName());
 
                 openActivityForResult(intent);
 
             }
         });
-        recyclerView = findViewById(R.id.recyclerView);
+
         recyclerView.setAdapter(eventAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
         setItemTouchHelper();
-//        setClickListener(eventAdapter);
     }
 
     public void updateResView(List<Event> eventList) {
         eventAdapter.updateEventsListItems(eventList);
+    }
+
+    private void setListener() {
+        eventController.setSetRefreshingListener(new SetRefreshingListener() {
+            @Override
+            public void setSwipeRefresherVal(boolean val) {
+                mSwipeRefreshLayout.setRefreshing(val);
+            }
+        });
     }
 
     private void setItemTouchHelper() {
@@ -226,7 +308,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                new DeleteEventAsyncTask(eventControllerImpl, eventAdapter, viewHolder).execute();
+                new DeleteEventAsyncTask(eventAdapter, viewHolder).execute();
                 /*
                 if (eventController.onRemoveButtonClicked(eventAdapter.getEventAt(viewHolder.getAdapterPosition()))) {
                     eventList = eventController.getList();
@@ -276,59 +358,29 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
 
     @Override
-    protected void onPause() {
-        super.onPause();
-//        Toast.makeText(this, "Paused Main", Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-//        new GetEventAsyncTask(eventController).execute();
-
-//        Toast.makeText(this, "Resumed Main", Toast.LENGTH_SHORT).show();
-    }
-
-    private void doCall() {
-
-
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                String[] data = new String[]{"1", "2", "3", "4", "5", "6"};
-//                viewModel.setText(data);
-            }
-        });
-
-    }
-
-    @Override
     public void onRefresh() {
         if (isNetworkAvailable()) {
-            getEventsNet.getAllEvents();
+            getRequest.performRequest(GetRequest.GET_ALL_EVENTS, null, null);
         } else {
             mSwipeRefreshLayout.setRefreshing(true);
-            new GetEventAsyncTask(eventControllerImpl).execute();
+            new GetEventAsyncTask(eventController).execute();
         }
     }
 
     private class DeleteEventAsyncTask extends AsyncTask<Event, Void, List<Event>> {
-        private EventControllerImpl eventControllerImpl;
         private EventAdapter eventAdapter;
         private RecyclerView.ViewHolder viewHolder;
 
-        private DeleteEventAsyncTask(EventControllerImpl eventControllerImpl, EventAdapter eventAdapter,
+        private DeleteEventAsyncTask(EventAdapter eventAdapter,
                                      RecyclerView.ViewHolder viewHolder) {
-            this.eventControllerImpl = eventControllerImpl;
             this.eventAdapter = eventAdapter;
             this.viewHolder = viewHolder;
         }
 
         @Override
         protected List<Event> doInBackground(Event... events) {
-            eventControllerImpl.onRemoveButtonClicked(eventAdapter.getEventAt(viewHolder.getAdapterPosition()));
-            return eventControllerImpl.onViewLoaded();
+            eventController.onRemoveButtonClicked(eventAdapter.getEventAt(viewHolder.getAdapterPosition()));
+            return eventController.onViewLoaded();
         }
 
         @Override
@@ -341,43 +393,33 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         }
     }
 
-    private class GetEventAsyncTask extends AsyncTask<Void, Void, List<Event>> {
-        private EventControllerImpl eventControllerImpl;
+    public class GetEventAsyncTask extends AsyncTask<Void, Void, List<Event>> {
+        private EventController eventController;
 
-        private GetEventAsyncTask(EventControllerImpl eventControllerImpl) {
-            this.eventControllerImpl = eventControllerImpl;
+        public GetEventAsyncTask(EventController eventController) {
+            this.eventController = MainActivity.this.eventController;
         }
 
         @Override
         protected List<Event> doInBackground(Void... voids) {
-            return eventControllerImpl.onViewLoaded();
+            return MainActivity.this.eventController.onViewLoaded();
         }
 
         @Override
         protected void onPostExecute(List<Event> events) {
             super.onPostExecute(events);
 
-            Log.d("GET EVENTS: ", "POST EXEC");
-
-            if (isNetworkAvailable()) {
-                getEventsNet.getAllEvents();
+                if (events != null) {
+                    Toast.makeText(MainActivity.this, "Events Local DB NOT NULL", Toast.LENGTH_SHORT).show();
+                    eventList = events;
+                    updateResView(events);
+                    recyclerView.setAdapter(eventAdapter);
+                    setRefresh(false);
+                } else {
+                    Toast.makeText(MainActivity.this, "Events Local DB NULL", Toast.LENGTH_SHORT).show();
+                }
             }
 
-            if (events != null) {
-                Toast.makeText(MainActivity.this, "Events Local DB NOT NULL", Toast.LENGTH_SHORT).show();
-            } else {
-                Log.d("GET EVENTS: ", "EVENTS IS NULL");
-            }
-
-            if (events != null) {
-                eventList = events;
-                updateResView(events);
-                recyclerView.setAdapter(eventAdapter);
-
-            }
-
-            setRefresh(false);
-        }
     }
 
     private boolean isNetworkAvailable() {

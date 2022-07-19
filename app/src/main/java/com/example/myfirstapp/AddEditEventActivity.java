@@ -3,10 +3,10 @@ package com.example.myfirstapp;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.DatePickerDialog;
+import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -16,11 +16,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -33,13 +29,15 @@ import com.example.myfirstapp.controller.EventController;
 import com.example.myfirstapp.controller.EventControllerImpl;
 import com.example.myfirstapp.controller.SaveEventHelper;
 import com.example.myfirstapp.controller.SaveEventHelperImpl;
-import com.example.myfirstapp.internal_storage_helper.InternalStorageHelper;
-import com.example.myfirstapp.internal_storage_helper.InternalStorageHelperImpl;
+import com.example.myfirstapp.utils.internal_storage_helper.InternalStorageHelper;
+import com.example.myfirstapp.utils.internal_storage_helper.InternalStorageHelperImpl;
 import com.example.myfirstapp.model.DBHelper;
 import com.example.myfirstapp.model.Event;
 import com.example.myfirstapp.model.EventModel;
 import com.example.myfirstapp.model.EventModelImpl;
 import com.example.myfirstapp.network.PostEventRequest;
+import com.example.myfirstapp.network.UpdateEvent;
+import com.example.myfirstapp.network.WebSocketClient;
 import com.example.myfirstapp.utils.BitmapToByteArrayHelper;
 import com.example.myfirstapp.utils.ImageEncoder;
 
@@ -63,6 +61,7 @@ public class AddEditEventActivity extends AppCompatActivity {
     public static final String EXTRA_IMAGE_NAME = "com.example.myfirstapp.EXTRA_IMAGE_NAME";
     public static final String EXTRA_IMAGE_URI = "com.example.myfirstapp.EXTRA_IMAGE_URI";
     public static final String EXTRA_URI = "com.example.myfirstapp.EXTRA_URI";
+    public static final String EXTRA_ORGANIZER_ID = "com.example.myfirstapp.EXTRA_ORGANIZER_ID";
 
     public static int REQUEST_CODE = 0;
 
@@ -87,13 +86,14 @@ public class AddEditEventActivity extends AppCompatActivity {
 
     private String title;
     private int id;
+    private String imgPath = "";
 
     InternalStorageHelper internalStorageHelper;
     SaveEventHelper saveEventHelper;
 
     ImageEncoder imageEncoder;
 
-    Handler mHandler = new Handler();
+    WebSocketClient webSocketClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,13 +129,12 @@ public class AddEditEventActivity extends AppCompatActivity {
         eventController = new EventControllerImpl(eventModel, this);
 
         internalStorageHelper = new InternalStorageHelperImpl();
-        saveEventHelper = new SaveEventHelperImpl(eventModel, eventController);
+        saveEventHelper = new SaveEventHelperImpl(eventController);
 
         btn_save_event.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (bitmap != null && REQUEST_CODE == MainActivity.ADD_EVENT_REQUEST) {
-//                    saveEventHelper.saveEditEvent(editTextTitle,  bitmap, AddEditEventActivity.this);
 
                     String titleField = editTextTitle.getText().toString();
                     title = titleField;
@@ -143,16 +142,23 @@ public class AddEditEventActivity extends AppCompatActivity {
 
                     id = id1;
 
-                    new LoadImgAsyncTask(bitmap, id, AddEditEventActivity.this).execute();
+                    new SaveImgToInternalStorageAsyncTask(bitmap, id, AddEditEventActivity.this).execute();
+
+                } else if (REQUEST_CODE == MainActivity.EDIT_EVENT_REQUEST) {
+                    //edit event local db, make post request
+                    String title = editTextTitle.getText().toString();
 
 
-
-//                    setResForParAct();
-                    //                    saveEvent(bitmap);
-                } else if (bitmap != null && REQUEST_CODE == MainActivity.EDIT_EVENT_REQUEST) {
-                    Event event = saveEventHelper.editEvent(bitmap, editTextTitle, editTextDescription, date_picker,
-                            time_picker, event_location, AddEditEventActivity.this, prefs,
-                            getIntent().getIntExtra(EXTRA_ID, -1));
+                    UpdateEvent updateEvent = new UpdateEvent(AddEditEventActivity.this);
+                    updateEvent.updateEvent(new Event(
+                            getIntent().getIntExtra(EXTRA_ID, 0),
+                            getIntent().getIntExtra(EXTRA_ORGANIZER_ID, 0),
+                            editTextTitle.getText().toString(),
+                            !imgPath.equals("") ? imgPath : null,
+                            getIntent().getStringExtra(EXTRA_IMAGE_NAME),
+                            0,
+                            0
+                                            ));
                     setResForParAct();
                 } else {
                     Toast.makeText(AddEditEventActivity.this, "Please " +
@@ -190,12 +196,16 @@ public class AddEditEventActivity extends AppCompatActivity {
         });
 
         if (getIntent().hasExtra(EXTRA_ID)) {
+
+            Log.d("EDIT_EVENT", String.valueOf(getIntent().hasExtra(EXTRA_ID)));
             setTitle("Edit event");
             editTextTitle.setText(getIntent().getStringExtra(EXTRA_TITLE));
             editTextDescription.setText(getIntent().getStringExtra(EXTRA_DESCRIPTION));
             time_picker.setText(getIntent().getStringExtra(EXTRA_TIME));
             date_picker.setText(getIntent().getStringExtra(EXTRA_DATE));
+            imgPath = getIntent().getStringExtra(EXTRA_IMAGE_URI);
             event_location.setText(getIntent().getStringExtra(EXTRA_LOCATION));
+            id = getIntent().getIntExtra(EXTRA_ID, 0);
             internalStorageHelper.loadImageFromStorage(
                     getIntent().getStringExtra(EXTRA_IMAGE_URI),
                     getIntent().getStringExtra(EXTRA_IMAGE_NAME),
@@ -227,6 +237,7 @@ public class AddEditEventActivity extends AppCompatActivity {
                 public void onActivityResult(Uri uri) {
                     // Handle the returned Uri
                     if (uri != null) {
+
                         InputStream inputStream = null;
                         try {
                             inputStream = getContentResolver().openInputStream(uri);
@@ -236,135 +247,80 @@ public class AddEditEventActivity extends AppCompatActivity {
 
                         Bitmap image = BitmapFactory.decodeStream(inputStream);
                         bitmap = image;
+                        imgPath = String.valueOf(uri);
                         urii = uri;
                         previewImg.setImageBitmap(image);
                     }
                 }
             });
 
-
     private void setResForParAct() {
 
         Intent data = new Intent();
 
         data.putExtra(MainActivity.REQUEST_CODE, REQUEST_CODE);
+        data.putExtra("changed", true);
 
         int id = getIntent().getIntExtra(EXTRA_ID, -1);
         if (id != -1) {
             data.putExtra(EXTRA_ID, id);
         }
 
-//        doCall();
         setResult(RESULT_OK, data);
         Toast.makeText(this, "Yey!", Toast.LENGTH_SHORT).show();
-//        finish();
     }
 
-    private void doCall() {
-        /*
-        if (id != -1) {
-//            eventController.onEditButtonClicked(event);
-        } else {
-            boolean success = eventController.onAddButtonClicked(event);
-            Toast.makeText(this, String.valueOf(success), Toast.LENGTH_SHORT).show();
-        }
-
-         */
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-//                finish();
-            }
-        });
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.add_event_menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.save_event:
-//                Event event = saveEventHelper.saveEditEvent(editTextTitle);
-//                setResForParAct(event);
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        Toast.makeText(this, "Paused Add", Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Toast.makeText(this, "Resumed Add", Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        Toast.makeText(this, "Stopped Add", Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        Toast.makeText(this, "Started Add", Toast.LENGTH_SHORT).show();
-    }
-
-    private class LoadImgAsyncTask extends AsyncTask<Void, Void, String> {
+    private class SaveImgToInternalStorageAsyncTask extends AsyncTask<Void, Void, Void> {
         private Bitmap bitmap;
         private int rand_id;
         private Context context;
+        private ProgressDialog dialog = new ProgressDialog(AddEditEventActivity.this);
 
-        private LoadImgAsyncTask(Bitmap bitmap, int rand_id, Context context) {
+
+        private SaveImgToInternalStorageAsyncTask(Bitmap bitmap, int rand_id, Context context) {
             this.bitmap = bitmap;
             this.rand_id = rand_id;
             this.context = context;
         }
 
         @Override
-        protected String doInBackground(Void... voids) {
-            return internalStorageHelper.saveToInternalStorage(bitmap, rand_id, context);
+        protected Void doInBackground(Void... voids) {
+            String path = internalStorageHelper.saveToInternalStorage(bitmap, rand_id, context);
+
+            Event event = new Event(new Random().nextInt(),
+                    prefs.getInt("UserID", 0),
+                    title,
+                    path,
+                    String.valueOf(id),
+                    0,
+                    0
+            );
+
+            event.setBase64Img(imageEncoder.bitmapToBase64String(bitmap));
+
+            postEventRequest = new PostEventRequest(AddEditEventActivity.this);
+            postEventRequest.postEvent(event);
+
+            eventController.onAddButtonClicked(event);
+
+            MainActivity.getWebSocket().send("hi");
+            return null;
         }
 
         @Override
-        protected void onPostExecute(String path) {
-            super.onPostExecute(path);
+        protected void onPreExecute() {
+            super.onPreExecute();
+            this.dialog.show();
+        }
 
-            if (path != null) {
+        @Override
+        protected void onPostExecute(Void voids) {
+            super.onPostExecute(voids);
 
-                Event event = new Event(new Random().nextInt(),
-                        prefs.getInt("UserID", 0),
-                        title,
-                        path,
-                        String.valueOf(id),
-                        0,
-                        0
-                );
-
-                event.setBase64Img(imageEncoder.bitmapToBase64String(bitmap));
+            this.dialog.dismiss();
 
 
-//                Log.d("JSON: ", event.getGson(event));
-
-                postEventRequest = new PostEventRequest(AddEditEventActivity.this);
-                postEventRequest.postEvent(event);
-
-                eventController.onAddButtonClicked(event);
-
-                setResForParAct();
-            }
+            setResForParAct();
         }
     }
-
 }

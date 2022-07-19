@@ -1,4 +1,4 @@
-package com.example.myfirstapp.internal_storage_helper;
+package com.example.myfirstapp.utils.internal_storage_helper;
 
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -6,7 +6,6 @@ import android.graphics.Bitmap;
 import android.util.Log;
 import android.widget.ImageView;
 
-import com.example.myfirstapp.AddEditEventActivity;
 import com.example.myfirstapp.R;
 import com.example.myfirstapp.utils.BitmapToByteArrayHelper;
 import com.example.myfirstapp.utils.ImageEncoder;
@@ -73,13 +72,12 @@ public class InternalStorageHelperImpl implements InternalStorageHelper{
                 e.printStackTrace();
             }
         }
-        Log.d("IMG: ", myPath.getAbsolutePath());
         return myPath.getAbsolutePath();
     }
 
     public void loadImageFromStorage(String path, String imgName, ImageView imageView, Context context)
     {
-        File f = new File(path, imgName);
+        File f = new File(path);
         Picasso.with(context).load(f).fit().centerCrop()
                 .placeholder(R.drawable.ic_placeholder)
                 .error(R.drawable.ic_close)

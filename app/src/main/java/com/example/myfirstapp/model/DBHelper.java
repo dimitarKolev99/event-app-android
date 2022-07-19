@@ -14,8 +14,6 @@ import java.util.List;
 
 public class DBHelper extends SQLiteOpenHelper {
 
-    private static final String TAG = EventDBAdapter.class.getSimpleName();
-
     private static final String DB_NAME = "event_database.db";
     private static final int DB_VERSION = 1;
 
@@ -166,10 +164,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
                 events.add(event);
             }
-            for (int i = 0; i < events.size(); i++) {
-                Log.d("DB", events.get(i).getTitle());
 
-            }
             cursor.close();
         }
 

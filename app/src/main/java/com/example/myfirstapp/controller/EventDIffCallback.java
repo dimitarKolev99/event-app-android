@@ -23,7 +23,11 @@ public class EventDIffCallback extends DiffUtil.Callback {
 
     @Override
     public int getNewListSize() {
-        return mNewEventsList.size();
+        if (mNewEventsList != null) {
+            return mNewEventsList.size();
+
+        }
+        return 0;
     }
 
     @Override

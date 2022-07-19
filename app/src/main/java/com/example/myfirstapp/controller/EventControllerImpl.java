@@ -5,15 +5,33 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
 import com.example.myfirstapp.model.Event;
 import com.example.myfirstapp.model.EventModel;
+import com.example.myfirstapp.utils.internal_storage_helper.InternalStorageHelper;
+import com.example.myfirstapp.utils.internal_storage_helper.InternalStorageHelperImpl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class EventControllerImpl implements EventController{
     EventModel eventModel;
     List<Event> list = null;
     Context context;
+    private UpdateEventsListItemsListener updateEventsListItemsListener;
+    private SetRefreshingListener setRefreshingListener;
+    private EventAdapter eventAdapter;
+    private RecyclerView recyclerView;
+
+    public EventControllerImpl(EventModel eventModel, Context context, EventAdapter eventAdapter,
+                               RecyclerView recyclerView) {
+        this.eventModel = eventModel;
+        this.context = context;
+        this.eventAdapter = eventAdapter;
+        this.recyclerView = recyclerView;
+    }
 
     public EventControllerImpl(EventModel eventModel, Context context) {
         this.eventModel = eventModel;
@@ -71,15 +89,17 @@ public class EventControllerImpl implements EventController{
         return success;
     }
 
-    public void onEditButtonClicked(Event event) {
+    public boolean onEditButtonClicked(Event event) {
+        boolean success = false;
         try {
-            boolean success = eventModel.updateEvent(event);
+            success = eventModel.updateEvent(event);
             if (success) {
                 list = eventModel.getAllEvents();
             }
         } catch (Exception e) {
             showErrorToast(e.getMessage());
         }
+        return success;
     }
 
     @Override
@@ -97,26 +117,14 @@ public class EventControllerImpl implements EventController{
         Log.d("EVENT_CONTROLLER", errorMessage);
     }
 
-    /*
-    private static class InsertEventAsyncTask extends AsyncTask<Event, Void, List<Event>> {
-        private EventModel eventModel;
 
-        private InsertEventAsyncTask(EventModel eventModel) {
-            this.eventModel = eventModel;
-        }
 
-        @Override
-        protected List<Event> doInBackground(Event... events) {
-            eventModel.addEvent(events[0]);
-            return eventModel.getAllEvents();
-        }
 
-        @Override
-        protected void onPostExecute(List<Event> events) {
-            super.onPostExecute(events);
-
-        }
+    public void setUpdateEventsListItemsListener(UpdateEventsListItemsListener updateEventsListItemsListener) {
+        this.updateEventsListItemsListener = updateEventsListItemsListener;
     }
 
-     */
+    public void setSetRefreshingListener(SetRefreshingListener setRefreshingListener) {
+        this.setRefreshingListener = setRefreshingListener;
+    }
 }

@@ -3,6 +3,7 @@ package com.example.myfirstapp;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -40,15 +41,20 @@ public class DatabaseTest {
     public static final String EVENT_DESCRIPTION = "event_description";
     public static final int EVENT_ORGANIZER_ID = 1;
     public static final int EVENT_COUNT = 2;
+    public static final String EVENT_IMAGE_URI = "";
+    public static final String EVENT_IMAGE_NAME = "";
     public static final String EVENT_TIME = "20:00";
     public static final String EVENT_DATE = "21.02.2022";
     public static final String EVENT_LOCATION = "Germany";
     public static final String EVENT_CREATED_AT = "now";
     public static final String EVENT_UPDATED_AT = "now";
+    public static final int EVENT_FAV_STATUS = 0;
 
     public static final String EVENT_NEW_TITLE = "new_title";
 
     int TEST_USER_PREFERENCES;
+
+    Event testEvent;
 
     /**
      * get context and set up the DB Helper class
@@ -70,6 +76,9 @@ public class DatabaseTest {
         edit.commit();
 
         TEST_USER_PREFERENCES = preferences.getInt(String.valueOf(R.string.pref_user_id), 23);
+
+        testEvent = new Event(EVENT_ID, EVENT_ORGANIZER_ID, EVENT_TITLE, EVENT_IMAGE_URI,
+                EVENT_IMAGE_NAME, EVENT_COUNT, EVENT_FAV_STATUS);
     }
 
     /**
@@ -77,9 +86,8 @@ public class DatabaseTest {
      */
     @Test
     public void insertEventTestIsSuccessful() {
-        Event testEvent = new Event(EVENT_ID, EVENT_ORGANIZER_ID, EVENT_TITLE,
-                EVENT_DESCRIPTION, EVENT_COUNT, EVENT_LOCATION, EVENT_DATE, EVENT_TIME,
-                EVENT_CREATED_AT, EVENT_UPDATED_AT);
+        Event testEvent = new Event(EVENT_ID, EVENT_ORGANIZER_ID, EVENT_TITLE, EVENT_IMAGE_URI,
+                EVENT_IMAGE_NAME, EVENT_COUNT, EVENT_FAV_STATUS);
         assertThat(dbHelper.insert(testEvent), is(true));
     }
 
@@ -89,13 +97,10 @@ public class DatabaseTest {
      */
     @Test
     public void updateEventIsSuccessful() {
-        Event testEvent = new Event(EVENT_ID, EVENT_ORGANIZER_ID, EVENT_TITLE,
-                EVENT_DESCRIPTION, EVENT_COUNT, EVENT_LOCATION, EVENT_DATE, EVENT_TIME,
-                EVENT_CREATED_AT, EVENT_UPDATED_AT);
+
 
         Event updatedEvent = new Event(EVENT_ID, EVENT_ORGANIZER_ID, EVENT_NEW_TITLE,
-                EVENT_DESCRIPTION, EVENT_COUNT, EVENT_LOCATION, EVENT_DATE, EVENT_TIME,
-                EVENT_CREATED_AT, EVENT_UPDATED_AT);
+                EVENT_COUNT, EVENT_FAV_STATUS);
 
         dbHelper.deleteAllEvents();
         assertThat(dbHelper.insert(testEvent), is(true));
@@ -109,9 +114,7 @@ public class DatabaseTest {
      */
     @Test
     public void deleteEventIsSuccessful() {
-        Event testEvent = new Event(EVENT_ID, EVENT_ORGANIZER_ID, EVENT_TITLE,
-                EVENT_DESCRIPTION, EVENT_COUNT, EVENT_LOCATION, EVENT_DATE, EVENT_TIME,
-                EVENT_CREATED_AT, EVENT_UPDATED_AT);
+
 
         dbHelper.deleteAllEvents();
 
@@ -127,24 +130,24 @@ public class DatabaseTest {
      */
     @Test
     public void insertEventIsSuccessWithSELECT() {
-        Event testEvent = new Event(EVENT_ID, TEST_USER_PREFERENCES, EVENT_TITLE,
-                EVENT_DESCRIPTION, EVENT_COUNT, EVENT_LOCATION, EVENT_DATE, EVENT_TIME,
-                EVENT_CREATED_AT, EVENT_UPDATED_AT);
+
         //Insert the test event
+        dbHelper.deleteAllEvents();
         dbHelper.insert(testEvent);
         //Select
         Event selectedEvent = dbHelper.getAllEvents().get(0);
         //Test if properties are correct
-        assertThat(selectedEvent.getId(), is(EVENT_ID));
+        assertEquals(EVENT_ID, selectedEvent.getEventid());
         assertThat(selectedEvent.getTitle(), is(EVENT_TITLE));
-        assertThat(selectedEvent.getOrganizer_id(), is(not(23))); //should not be the def value from SharedPreferences
-        assertThat(selectedEvent.getDescription(), is(EVENT_DESCRIPTION));
-        assertThat(selectedEvent.getInterested_count(), is(EVENT_COUNT));
-        assertThat(selectedEvent.getDate(), is(EVENT_DATE));
-        assertThat(selectedEvent.getTime(), is(EVENT_TIME));
-        assertThat(selectedEvent.getCreated_at(), is(EVENT_CREATED_AT));
-        assertThat(selectedEvent.getLocation(), is(EVENT_LOCATION));
-        assertThat(selectedEvent.getUpdated_at(), is(EVENT_UPDATED_AT));
+        assertThat(selectedEvent.getOrganizerid(), is(not(23))); //should not be the def value from SharedPreferences
+//        assertThat(selectedEvent.getDescription(), is(EVENT_DESCRIPTION));
+        assertThat(selectedEvent.getInterestedcount(), is(EVENT_COUNT));
+        assertThat(selectedEvent.getFavstatus(), is(EVENT_FAV_STATUS));
+//        assertThat(selectedEvent.getDate(), is(EVENT_DATE));
+//        assertThat(selectedEvent.getTime(), is(EVENT_TIME));
+//        assertThat(selectedEvent.getCreated_at(), is(EVENT_CREATED_AT));
+//        assertThat(selectedEvent.getLocation(), is(EVENT_LOCATION));
+//        assertThat(selectedEvent.getUpdated_at(), is(EVENT_UPDATED_AT));
     }
 
 

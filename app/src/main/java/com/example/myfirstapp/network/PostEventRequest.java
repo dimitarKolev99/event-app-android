@@ -19,9 +19,9 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class PostEventRequest implements Callback<Event> {
+public class PostEventRequest implements Callback<List<Event>> {
 
-    Context context;
+    private Context context;
 
     public PostEventRequest(Context context) {
         this.context = context;
@@ -29,26 +29,25 @@ public class PostEventRequest implements Callback<Event> {
 
     public void postEvent(Event event) {
 
-        Call<Event> call = RetrofitClient.getInstance().getNetworkService().postEvent(event);
+
+        Call<List<Event>> call = RetrofitClient.getInstance().getNetworkService().postEvent(event);
 
         call.enqueue(this);
     }
 
     @Override
-    public void onResponse(Call<Event> call, Response<Event> response) {
+    public void onResponse(Call<List<Event>> call, Response<List<Event>> response) {
         if (response.isSuccessful()) {
-            Event res = response.body();
-            Log.d("API: ", res.getGson(res));
+            Toast.makeText(context, "Event posted successfully!", Toast.LENGTH_SHORT).show();
         } else {
-            Toast.makeText(context, response.message(), Toast.LENGTH_SHORT).show();
-            Log.d("ERROR: ", response.message());
+            Toast.makeText(context, "Posting event failed", Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
-    public void onFailure(Call<Event> call, Throwable t) {
+    public void onFailure(Call<List<Event>> call, Throwable t) {
         t.printStackTrace();
-        Toast.makeText(context, t.getMessage(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, "Posting event failed: " + t.getMessage(), Toast.LENGTH_SHORT).show();
     }
 
 }

@@ -30,10 +30,21 @@ public interface EventController {
      * call the model and edit the event
      * @param event
      */
-    void onEditButtonClicked(Event event);
+    boolean onEditButtonClicked(Event event);
 
+    /**
+     * insert the response from the api to the local sqlite db
+     * @param eventList the response from the api
+     */
     void insertMany(List<Event> eventList);
 
+    /**
+     * delete all from table events in local db
+     */
     void deleteAllEvents();
 
+
+    void setUpdateEventsListItemsListener(UpdateEventsListItemsListener updateEventsListItemsListener);
+
+    void setSetRefreshingListener(SetRefreshingListener setRefreshingListener);
 }

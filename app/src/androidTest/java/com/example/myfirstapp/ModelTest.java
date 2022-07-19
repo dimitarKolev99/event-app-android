@@ -52,8 +52,7 @@ public class ModelTest {
     @Test
     public void insertEventTestIsSuccessful() {
         Event testEvent = new Event(EVENT_ID, EVENT_ORGANIZER_ID, EVENT_TITLE,
-                EVENT_DESCRIPTION, EVENT_COUNT, EVENT_LOCATION, EVENT_DATE, EVENT_TIME,
-                EVENT_CREATED_AT, EVENT_UPDATED_AT);
+                EVENT_COUNT, 0);
         assertThat(eventModel.addEvent(testEvent), is(true));
     }
 

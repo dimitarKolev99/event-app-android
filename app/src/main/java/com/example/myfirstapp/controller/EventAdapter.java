@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myfirstapp.R;
 import com.example.myfirstapp.model.Event;
+import com.example.myfirstapp.network.UpdateEvent;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
@@ -33,10 +34,20 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
     EventController eventController;
 
-    public EventAdapter(List<Event> eventList, Context context, EventController eventController) {
+    private UpdateEvent updateEvent;
+
+    private RecyclerView recyclerView;
+
+
+    public EventAdapter(List<Event> eventList, Context context, EventController eventController, UpdateEvent updateEvent,
+                        RecyclerView recyclerView) {
         this.eventList.addAll(eventList);
         this.context = context;
         this.eventController = eventController;
+        this.updateEvent = updateEvent;
+        this.recyclerView = recyclerView;
+
+
     }
 
     public void updateEventsListItems(List<Event> events) {
@@ -54,7 +65,6 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
     public class EventViewHolder extends RecyclerView.ViewHolder {
         private final TextView titleView;
-        private final TextView descrView;
         private final TextView dateView;
         private final TextView timeView;
         private final ImageView image;
@@ -70,14 +80,13 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
                     int position = getAdapterPosition();
                     if (listener != null && position != RecyclerView.NO_POSITION) {
                         listener.onEventClick(getEventAt(position));
-                        Toast.makeText(view.getContext(), "Clicked item" + position, Toast.LENGTH_SHORT).show();
                     }
 
                 }
             });
 
             titleView = itemView.findViewById(R.id.event_title);
-            descrView = itemView.findViewById(R.id.event_description);
+//            descrView = itemView.findViewById(R.id.event_description);
             dateView = itemView.findViewById(R.id.event_date);
             timeView = itemView.findViewById(R.id.event_time);
             image = itemView.findViewById(R.id.imageView);
@@ -96,7 +105,9 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
                         getIntCountTV().setText(String.valueOf(currentEvent.getInterestedcount()));
 
                         //onEditButtonClicked here
+                        updateEvent.updateEvent(currentEvent);
                         eventController.onEditButtonClicked(currentEvent);
+
                         favBtn.setBackgroundResource(R.drawable.ic_baseline_favorite_24);
                         favBtn.setSelected(true);
                     } else {
@@ -104,6 +115,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
                         getIntCountTV().setText(String.valueOf(currentEvent.getInterestedcount()));
 
+                        updateEvent.updateEvent(currentEvent);
                         eventController.onEditButtonClicked(currentEvent);
                         currentEvent.setFavstatus(0);
 
@@ -117,10 +129,6 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
         public TextView getTextView() {
             return titleView;
-        }
-
-        public TextView getDescrView() {
-            return descrView;
         }
 
         public TextView getDateView() {
@@ -144,8 +152,6 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         }
     }
 
-
-
     @NonNull
     @Override
     public EventViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -168,12 +174,6 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         }
 
         holder.getIntCountTV().setText(String.valueOf(currentEvent.getInterestedcount()));
-
-        /*
-        Log.d("image path", currentEvent.getImagePath());
-        Log.d("image name", currentEvent.getImageName());
-
-         */
 
         loadImageFromStorage(currentEvent.getImagepath(), holder.getImage());
     }

@@ -66,6 +66,12 @@ public class EspressoTest {
     }
 
     @Test
+    public void testEditFields() {
+        onView(withId(R.id.my_row)).perform(click());
+        onView(withId(R.id.edit_text_title)).check(matches(isDisplayed()));
+    }
+
+    @Test
     public void resViewIsDisplayed() {
         onView(withId(R.id.recyclerView)).check(matches(isDisplayed()));
     }

@@ -1,4 +1,4 @@
-package com.example.myfirstapp.internal_storage_helper;
+package com.example.myfirstapp.utils.internal_storage_helper;
 
 import android.content.Context;
 import android.graphics.Bitmap;

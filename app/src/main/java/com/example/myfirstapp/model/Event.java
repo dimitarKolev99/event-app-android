@@ -4,18 +4,27 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 public class Event {
-    int eventid;
-    int organizerid;
-    String title;
-    String imagepath;
-    String imageURI;
-    String imageName;
-    int interestedcount;
-    int favstatus;
-    String base64Img;
+    private int eventid;
+    private int organizerid;
+    private String title;
+    private String imagepath;
+    private String imageURI;
+    private String imageName;
+    private int interestedcount;
+    private int favstatus;
+    private String base64Img;
 
     public Event(String title) {
         this.title = title;
+    }
+
+    public Event(int eventid, int organizerid, String title, int interestedcount,
+                 int favstatus) {
+        this.eventid = eventid;
+        this.organizerid = organizerid;
+        this.title = title;
+        this.interestedcount = interestedcount;
+        this.favstatus = favstatus;
     }
 
     public Event(int eventid, int organizerid, String title, String imagepath, String imageName, int interestedcount,

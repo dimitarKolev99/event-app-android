@@ -6,6 +6,15 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class RetrofitClient {
     private static RetrofitClient instance = null;
     private NetworkService networkService;
+    private String testUrl = "";
+
+    public void setTestUrl(String testUrl) {
+        this.testUrl = testUrl;
+    }
+
+    public String getTestUrl() {
+        return testUrl;
+    }
 
     private RetrofitClient() {
         Retrofit retrofit = new Retrofit.Builder().baseUrl(NetworkService.BASE_URL)
